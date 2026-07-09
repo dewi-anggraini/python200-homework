@@ -53,7 +53,7 @@ def happiness_pipeline():
     file_paths = [
         f"resources/happiness_project/world_happiness_{year}.csv"
         # f"../python-200-v1-main/assignments/resources/happiness_project/world_happiness_{year}.csv"
-        for year in range(2015, 2024)
+        for year in range(2015, 2025)
     ]
 
     df = load_happiness_data(file_paths)
@@ -65,8 +65,6 @@ def happiness_pipeline():
 
     logger = get_run_logger()
     logger.info(f"\n{df.head()}")
-    # print(df.head())
-    # print(df.columns)
 
 # --- Task 2: Descriptive Statistics ---
 @task
@@ -273,15 +271,14 @@ def correlation_analysis(df):
 
         clean_data = df[[column, "Happiness score"]].dropna()
 
+        if len(clean_data) < 2:
+            logger.info(f"Skipping {column}: not enough data for correlation.")
+            continue
+
         correlation, p_value = pearsonr(
             clean_data[column],
             clean_data["Happiness score"]
         )
-
-        #correlation, p_value = pearsonr(
-            #df[column],
-            #df["Happiness score"]
-        #)
 
         logger.info(
             f"{column}: correlation={correlation:.3f}, "
@@ -464,7 +461,6 @@ def generate_summary(df):
             f"{strongest['variable']} "
             f"(correlation={strongest['correlation']:.3f})."
         )
-
     else:
 
         logger.info(

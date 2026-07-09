@@ -26,16 +26,7 @@ def summarize_data(series):
         "std": series.std(),
         "mode": modes.iloc[0] if len(modes) > 0 else None
     }
-#@task
-#def summarize_data(series):
-    return {
-        "mean": series.mean(),
-        "median": series.median(),
-        "std": series.std(),
-        "mode": series.mode().iloc[0]  # mode() returns a Series, and take first value
-    }
 
-# Step 4: Pipeline
 @flow
 def pipeline_flow():
     # arr = np.array([])
@@ -43,9 +34,26 @@ def pipeline_flow():
     series = create_series(arr)
     cleaned = clean_data(series)
     summary = summarize_data(cleaned)
-    print(summary)
     return summary
 
 # Run pipeline
 if __name__ == "__main__":
     pipeline_flow()
+
+# Reflection Questions
+#
+# 1. This pipeline is simple—just three small functions on a handful of
+# numbers. Why might Prefect be more overhead than it is worth here?
+#
+# Answer:
+# For a small pipeline like this, Prefect adds extra setup and decorators
+# without providing much additional value. A regular Python script can perform
+# the same work with less code and complexity.
+#
+# 2. Describe some realistic scenarios where a framework like Prefect could
+# still be useful, even if the pipeline logic itself stays simple.
+#
+# Answer:
+# Prefect is useful for scheduled workflows, recurring ETL jobs, cloud data
+# pipelines, monitoring task execution, automatic retries after failures,
+# logging, and coordinating tasks that depend on one another.
