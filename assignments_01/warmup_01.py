@@ -55,7 +55,7 @@ print(df[["name", "name_upper"]])
 #df = df.groupby("city").mean(), I was computing all the numeric columns (grade, grade_curved, etc) so, I put the city means in a new variable
 
 city_means = df.groupby("city")["grade"].mean()
-print(df)
+print(city_means)
 
 # Pandas Q6
 # Replace the value "Austin" in the "city" column with "Houston".
@@ -220,7 +220,7 @@ plt.show()
 group_a = [55, 60, 63, 70, 68, 62, 58, 65]
 group_b = [75, 80, 78, 90, 85, 79, 82, 88]
 
-plt.boxplot([group_a, group_b], label=["Group A", "Group B"])
+plt.boxplot([group_a, group_b], tick_labels=["Group A", "Group B"])
 plt.title("Score Comparison")
 plt.ylabel("Scores")
 plt.show()
@@ -234,7 +234,7 @@ plt.show()
 normal_data = np.random.normal(50, 5, 200) # mean=50, std=5
 skewed_data = np.random.exponential(10, 200) # exponential distribution
 
-plt.boxplot([normal_data, skewed_data], label=["Normal", "Exponential"])
+plt.boxplot([normal_data, skewed_data], tick_labels=["Normal", "Exponential"])
 plt.title("Distribution Comparison")
 plt.ylabel("Values")
 plt.show()
@@ -278,19 +278,19 @@ group_a = [72, 68, 75, 70, 69, 73, 71, 74]
 group_b = [80, 85, 78, 83, 82, 86, 79, 84]
 
 # Perform independent t-test
-t_stat, p_value = stats.ttest_ind(group_a, group_b)
+t_stat, p_value_q1 = stats.ttest_ind(group_a, group_b)
 
 print("t-statistic:", t_stat)
-print("p-value:", p_value)
+print("p-value:", p_value_q1)
 
 # Hypothesis Question 2
 # Using the p-value from Q1,
 # write an if/else statement that prints whether the result is statistically significant at alpha = 0.05.
 alpha = 0.05
-if p_value < alpha:
+if p_value_q1 < alpha:
     print("Result is statistically significant at alpha = 0.05 ")
 else:
-    print("Result is NOT statistically significant at alpha = 0.03") 
+    print("Result is NOT statistically significant at alpha = 0.05") 
 
 # Hypothesis Question 3
 # Run a paired t-test on the before/after scores below (the same students measured twice). Print the t-statistic and p-value.
@@ -298,7 +298,7 @@ else:
 before = [60, 65, 70, 58, 62, 67, 63, 66]
 after  = [68, 70, 76, 65, 69, 72, 70, 71]
 # Perform independent t-test
-t_stat, p_value = stats.ttest_ind(before, after)
+t_stat, p_value = stats.ttest_rel(before, after)
 
 print("t-statistic:", t_stat)
 print("p-value:", p_value)
@@ -327,7 +327,7 @@ print("one-tailed p-value:", p_value)
 # Hypothesis Question 6
 # Write a plain-language conclusion for the result of Q1 (do not just say "reject the null hypothesis"). Format it as a print() statement.
 # Your conclusion should mention the direction of the difference and whether it is likely due to chance.
-if p_value < 0.05:
+if p_value_q1 < 0.05:
     print("Group A scored lower than Group B, and this difference is unlikely due to chance.")
 else:
     print("Group A and Group B scores are not different enough to rule out chance.")

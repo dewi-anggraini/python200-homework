@@ -16,7 +16,6 @@ def load_happiness_data(file_paths):
 
     logger = get_run_logger()
     logger.info("Starting data loading...")
-    #print("Starting data loading...")
 
     dataframes = []
 
@@ -26,6 +25,12 @@ def load_happiness_data(file_paths):
             file_path,
             sep=";",
             decimal=","
+        )
+
+        # standarized 2024 column name
+        if "Ladder score" in df.columns:
+            df = df.rename(
+                columns={"Ladder score": "Happiness score"}
         )
 
         year = file_path.split("_")[-1].replace(".csv", "")
