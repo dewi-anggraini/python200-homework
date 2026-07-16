@@ -186,7 +186,22 @@ print(f"Test R²: {r2_b:.4f}")
 print("\n--- TASK 5: BUILD THE FULL MODEL ---")
 
 # Explicit feature list configuration
-feature_cols = ["failures", "Medu", "Fedu", "studytime", "higher", "schoolsup", "internet", "sex", "freetime", "activities", "traveltime"]
+feature_cols = ["age",
+    "Medu",
+    "Fedu",
+    "traveltime",
+    "studytime",
+    "failures",
+    "absences",
+    "freetime",
+    "goout",
+    "Walc",
+    "schoolsup",
+    "internet",
+    "higher",
+    "activities",
+    "sex"
+]
 
 X = df_clean[feature_cols].values
 y = df_clean["G3"].values
@@ -251,21 +266,35 @@ plt.savefig("outputs/predicted_vs_actual.png")
 plt.close()
 
 # COMMENT (Plot Interpretation):
-# The model struggles significantly at the extremes. On the low end (actual grades below 8), 
-# the model heavily overpredicts because it clusters predictions tightly between 10 and 13.
-# A point ABOVE the diagonal means the actual grade was higher than predicted (underestimation). 
-# A point BELOW the diagonal means the actual grade was lower than predicted (overestimation).
+# The model captures a moderate relationship between predicted and actual grades,
+# but it has difficulty with extreme values. For very high grades, the model often
+# underpredicts performance, while for very low grades it tends to overpredict,
+# pulling predictions closer toward the average range.
+# predictions (x-axis) are not tightly clustered only between 10 and 13.
+# They mostly fall around that range, but there are predictions from about 7 to 15.
+
+# A point ABOVE the diagonal line means the actual grade was higher than the
+# predicted grade, indicating underestimation by the model.
+# A point BELOW the diagonal line means the actual grade was lower than the
+# predicted grade, indicating overestimation by the model.
 
 # SUMMARY COMMENTS:
 # 1. The filtered dataset contains 357 rows (out of 395 originally), making the 20% test set 72 rows.
-# 2. Performance: The best model achieves a test RMSE of ~2.9 points and an R² of ~0.17. 
-#    a typical grade prediction is off by roughly 3 points on a 0-20 scale. It only accounts 
-#    for 17% of why grades differ between students.
-# 3. Key Drivers: 'higher' (wants to take higher education) has the largest positive coefficient, meaning 
-#    high motivation yields higher scores. 'failures' has the largest negative coefficient, meaning past 
-#    academic struggles strongly drag down final performance.
-# 4. Surprise: Father's education ('Fedu') matters noticeably less than Mother's education ('Medu') 
-#    according to the calculated coefficients.
+#
+# 2. Performance: The full model achieves a test RMSE of approximately 2.66 points
+#    and a test R² of approximately 0.26. This means predictions are typically off
+#    by about 2.7 grade points on a 0-20 scale, and the model explains about 26%
+#    of the variation in final grades.
+#
+# 3. Key Drivers: 'schoolsup' has the largest negative coefficient (-2.263), suggesting
+#    that students receiving school support tend to have lower predicted grades,
+#    possibly because support is provided to students who are already struggling.
+#    'internet' has the largest positive coefficient (+1.037), while 'failures'
+#    has a strong negative relationship (-0.800) with final grades.
+#
+# 4. Surprise: Unlike the original expectation that education level would be a major
+#    factor, parental education coefficients are relatively small compared with
+#    features such as failures, schoolsup, and internet access.
 
 
 # NEGLECTED FEATURE: THE POWER OF G1
@@ -292,13 +321,21 @@ test_r2_g1 = r2_score(y_test_g, y_pred_test_g)
 print(f"Test R² with G1 included: {test_r2_g1:.4f}")
 
 # COMMENT (The Power of G1):
-# 1. Does a high R² mean G1 causes G3? No, correlation is not causation. G1 does not "cause" G3; 
-#    rather, G1 acts as an early, direct measurement of the *same underlying academic performance* 
-#    and mastery of the subject matter that G3 tests later on.
-# 2. Usefulness for Identification: Yes, it is highly useful for identifying students who are already 
-#    struggling by the end of the first period, providing a clear statistical flag for intervention.
-# 3. Early Intervention: If educators want to intervene *before* G1 data is even available, they 
-#    cannot rely on this high-performing model. They would need to look back at our Task 5 behavioral 
-#    model, prioritizing interventions based on student background indicators such as past class failures 
-#    or whether the student lacks a desire to pursue higher education ('higher' = 0).
+# 1. Does a high R² here mean G1 is causing G3?
+# No. A high R² does not mean G1 causes G3. Instead, G1 is a strong predictor
+# because it measures a student's earlier academic performance, which is closely
+# related to their final grade. The relationship shows predictive power, not
+# causation.
+#
+# 2. Is this a useful model for identifying students who might struggle?
+# Yes. Since G1 is available before the final grade, this model can identify
+# students who are already showing signs of academic difficulty and may need
+# additional support before the end of the course.
+#
+# 3. What would educators need to do to intervene early, before G1 is available?
+# Before G1 exists, educators cannot rely on this high-performing model. They
+# would need to use other early indicators from the Task 5 model, such as past
+# failures, study habits, attendance, support needs, and student background
+# characteristics to identify students who may need intervention.
+
 

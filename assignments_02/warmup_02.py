@@ -47,7 +47,7 @@ print("New Shape:", x.shape)
 X_clusters, _ = make_blobs(n_samples=120, centers=3, cluster_std=0.8, random_state=7)
 print("Dataset Shape", X_clusters.shape)
 
-kmeans = KMeans(n_clusters=3, random_state=7)  # 1. Create the model
+kmeans = KMeans(n_clusters=3, random_state=42)  # 1. Create the model
 kmeans.fit(X_clusters)                                    # 2. Fit -- find cluster centers
 labels = kmeans.predict(X_clusters)                       # 3. Predict a label for each point
 
@@ -83,7 +83,7 @@ plt.scatter(
 )
 
 # Add title and axis labels
-plt.title("K-Means Clustering")
+plt.title("K-Means Clustering Results (3 Clusters)")
 plt.xlabel("Feature 1")
 plt.ylabel("Feature 2")
 plt.legend()
