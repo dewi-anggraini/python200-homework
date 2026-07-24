@@ -423,8 +423,34 @@ for depth in depth_options:
         f"Test Accuracy={test_accuracy:.4f}"
     )
 
+best_depth_accuracy = depth_results[None]["test"]
+depth10_accuracy = depth_results[10]["test"]
+
+accuracy_difference = best_depth_accuracy - depth10_accuracy
+
+print(f"""
+Decision Tree Selection:
+
+max_depth=None test accuracy:
+{best_depth_accuracy:.4f}
+
+max_depth=10 test accuracy:
+{depth10_accuracy:.4f}
+
+Accuracy difference:
+{accuracy_difference:.4f}
+
+Although max_depth=None achieved slightly higher accuracy,
+it has a much larger gap between training and testing accuracy,
+indicating overfitting.
+
+max_depth=10 was selected because it provides similar predictive
+performance with lower model complexity and better expected
+generalization.
+""")
+
 # -----------------------------------------------------
-# Production Decision:
+# Decision Tree Model Decision:
 # -- Decision Tree Depth Testing ---
 # Depth 3: Train Accuracy=0.8965, Test Accuracy=0.8849
 # Depth 5: Train Accuracy=0.9234, Test Accuracy=0.8990
@@ -433,18 +459,19 @@ for depth in depth_options:
 #
 # I selected max_depth=10 for the production model.
 #
-# Although the unlimited-depth tree achieved a slightly
-# higher test accuracy (0.9110) compared with depth 10
-# (0.9088), the improvement was very small (0.22%).
+# The highest test accuracy was achieved by max_depth=None
+# (0.9110). However, this model also achieved almost perfect
+# training accuracy (0.9997), which indicates that the tree
+# learned the training data too closely and may overfit.
 #
-# However, the unlimited tree achieved nearly perfect
-# training accuracy (0.9997), compared with 0.9674 for
-# depth 10. This large gap between training and testing
-# performance indicates overfitting.
+# The max_depth=10 model achieved a very similar test accuracy
+# (0.9088) while having lower training accuracy (0.9674).
+# The accuracy difference between the two models was only
+# 0.22%, but max_depth=10 provides a simpler model with better
+# balance between performance and generalization.
 #
-# Therefore, max_depth=10 provides a better balance between
-# accuracy, model complexity, and generalization to new
-# data.
+# Therefore, max_depth=10 was selected as the final Decision
+# Tree configuration.
 # -----------------------------------------------------
 
 chosen_depth = 10
@@ -838,7 +865,7 @@ most_stable = min(cv_results, key=lambda k: cv_results[k][1])
 
 print("\n--- Cross-Validation Insights Summary ---")
 print(f"Most Accurate Model on CV: {most_accurate} ({cv_results[most_accurate][0]:.4f})")
-print(f"Most Stable Model (Lowest Var): {most_stable} (Std Dev: {cv_results[most_stable][1]:.4f})")
+print(f"Most Stable Model (Lowest Std Dev): {most_stable} (Std Dev: {cv_results[most_stable][1]:.4f})")
 
 
 # VARIANCE COMPARISON: RANDOM FOREST VS DECISION TREE
@@ -856,11 +883,23 @@ else:
     print(" -> Observation: Variance levels are highly comparable between the tree structures.")
 
 # Comment:
-# Most Accurate: Random Forest almost universally wins both the single train/test split
-# and the 5-fold cross-validation leaderboard on Spambase, often hitting $\sim95\%$.
-# Most Stable (Lowest Standard Deviation): Random Forest has a distinctively low standard deviation compared to the individual Decision Tree.
-# Do the Rankings Match? Generally, yes. If your single train/test split was properly stratified,
-# your performance ranking (Random Forest > Logistic Regression > KNN > Unscaled KNN) will match your cross-validation mean score rankings exactly. If they differ wildly, it indicates your initial single train/test split 
+# The Random Forest achieved the highest average accuracy in
+# both the train/test split and 5-fold cross-validation results.
+# This shows that Random Forest was the best-performing model
+# for this dataset.
+#
+# The model with the lowest standard deviation was the most
+# stable because its results changed less between the five folds.
+# Random Forest also showed good stability compared with the
+# single Decision Tree because it combines multiple trees.
+#
+# The cross-validation ranking was similar to the train/test
+# split ranking. This means the model comparison was consistent
+# and the results were not only caused by one random data split.
+#
+# Overall, the cross-validation results support selecting
+# Random Forest as the strongest model because it achieved high
+# accuracy and reliable performance.
 
 # Task 5: Building a Prediction Pipeline
 
@@ -884,7 +923,8 @@ print(classification_report(y_test, tree_preds))
 
 
 # 2. Best Non-Tree-Based Pipeline (Logistic Regression vs. KNN)
-# Logistic Regression was the best-performing non-tree model.
+# Logistic Regression was selected because it achieved the highest
+# performance among the non-tree-based classifiers tested.
 # In Task 3, the scaled features achieved higher accuracy than the
 # PCA-reduced features, so this production pipeline includes
 # StandardScaler but does not include PCA.
@@ -901,9 +941,28 @@ print("\n[Pipeline Results]: Logistic Regression")
 print(classification_report(y_test, non_tree_preds))
 
 print("""
-The non-tree production pipeline uses StandardScaler followed by
-Logistic Regression. PCA was not included because the scaled
-Logistic Regression model achieved higher accuracy than the
-PCA-reduced version in Task 3.
+Pipeline Comparison Discussion:
+
+The Random Forest pipeline achieved a higher accuracy (0.94)
+compared with the Logistic Regression pipeline (0.93). This matches
+the earlier results from Task 3 and Task 4, where Random Forest was
+the strongest-performing model.
+
+The two pipelines do not have the same structure because the models
+have different requirements. The Random Forest pipeline only contains
+the classifier because tree-based models do not require feature scaling.
+
+The Logistic Regression pipeline includes StandardScaler before the
+classifier because Logistic Regression is sensitive to feature scales.
+Scaling helps improve model performance by putting all features on a
+similar range.
+
+The pipeline results are very close to the earlier manual approach,
+which confirms that the preprocessing steps were applied correctly.
+Using pipelines also helps prevent data leakage because preprocessing
+is performed only using the training data.
 """)
+
+
+
 

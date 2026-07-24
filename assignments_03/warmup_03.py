@@ -291,9 +291,9 @@ plt.legend()
 plt.savefig("outputs/pca_variance_explained.png", bbox_inches='tight')
 plt.show()
 
-# Comment: approximately how many components do you need to explain 80% of the variance?
-# Based on the data,
-# need approximately 13 components to explain 80% of the variance in the digits dataset.
+# Comment: 
+# The cumulative explained variance plot shows that approximately 13
+# principal components are needed to explain 80% of the variance.
 
 # Q4
 
@@ -316,13 +316,6 @@ for col in range(num_digits):
     axes[0, col].imshow(images[col], cmap='gray_r')
     axes[0, col].axis('off')
 
-axes[0, 0].set_ylabel(
-    "Original",
-    rotation=0,
-    labelpad=60,
-    verticalalignment='center',
-    fontweight='bold'
-)
 
 # Rows 1 to 4: Plot reconstructions for each n_components value
 for row_idx, n in enumerate(n_values, start=1):
@@ -331,14 +324,16 @@ for row_idx, n in enumerate(n_values, start=1):
         axes[row_idx, col].imshow(reconstructed_img, cmap='gray_r')
         axes[row_idx, col].axis('off')
 
-    # Label the row with the number of components used
-    axes[row_idx, 0].set_ylabel(
-        f"n = {n} components",
-        rotation=0,
-        labelpad=60,
-        verticalalignment='center',
-        fontweight='bold'
-    )
+
+# Leave extra space on the left for row labels
+plt.subplots_adjust(left=0.20, hspace=0.25)
+
+# Add labels for the entire rows
+fig.text(0.06, 0.90, "Original", fontsize=12, fontweight='bold', va='center')
+fig.text(0.06, 0.72, "n = 2", fontsize=12, fontweight='bold', va='center')
+fig.text(0.06, 0.54, "n = 5", fontsize=12, fontweight='bold', va='center')
+fig.text(0.06, 0.36, "n = 15", fontsize=12, fontweight='bold', va='center')
+fig.text(0.06, 0.18, "n = 40", fontsize=12, fontweight='bold', va='center')
 
 plt.tight_layout()
 
@@ -348,4 +343,6 @@ plt.show()
 
 # Comment:
 # Observation: the digits appear more recognizable around n = 15,
-# and this is roughly consistent with the point where the explained variance curve begins to level off.
+# This generally matches the explained variance plot, where the curve
+# begins to level off after capturing most of the important information.
+
