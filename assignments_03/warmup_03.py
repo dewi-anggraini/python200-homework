@@ -1,8 +1,6 @@
-# ---Part 1: Warmup Exercises---
+
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
-import os
 
 from sklearn.datasets import load_iris, load_digits
 from sklearn.model_selection import train_test_split, cross_val_score
@@ -10,8 +8,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.multiclass import OneVsRestClassifier
 from sklearn.linear_model import LogisticRegression
+from sklearn.multiclass import OneVsRestClassifier
 from sklearn.metrics import (
     accuracy_score,
     classification_report,
@@ -23,8 +21,9 @@ iris = load_iris(as_frame=True)
 X = iris.data
 y = iris.target
 
-# ----PREPROCESSING----
-# Preprocessing Question 1
+# ---- Preprocessing ----
+
+# Q1
 # Split X and y into training and test sets using an 80/20 split with stratify=y and random_state=42.
 # Print the shapes of all four arrays.
 X_train, X_test, y_train, y_test = train_test_split( 
@@ -40,25 +39,24 @@ print("X_test :", X_test.shape)
 print("y_train:", y_train.shape)
 print("y_test :", y_test.shape)
 
-# Preprocessing Question 2
+# Q2
 # Fit a StandardScaler on X_train and use it to transform both X_train and X_test.
-# Add a comment explaining in one sentence why you fit the scaler on X_train only.
 
 # Scale Using StandardScaler
-Scaler = StandardScaler()
-X_train_scaled = Scaler.fit_transform(X_train)
-X_test_scaled = Scaler.transform(X_test)
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
 
 # Print the mean of each column in X_train_scaled -- they should all be very close to 0.
 print("Means of scaled training columns:", X_train_scaled.mean(axis=0)) # calculates the mean down each column
 
+# Add a comment explaining in one sentence why you fit the scaler on X_train only.
 # COMMENT: why you fit the scaler on X_train only.
-# If I use fit_transform() on the test set,
-# I'm letting the model peek into the test data's distribution before evaluation,
-# called data leakage, and it gives an unrealistically high accuracy because the model indirectly gains information it shouldn't have during training.20 Oct 2025
+# Fit scaler only on training data to prevent data leakage from the test set.
 
-# ----KNN-----
-# KNN Question 1
+# ---- KNN -----
+
+# Q1
 #Build a KNeighborsClassifier with n_neighbors=5, fit it on the unscaled training data (X_train), and predict on the test set.
 # Print the accuracy score and the full classification report.
 
@@ -79,8 +77,8 @@ print(f"Accuracy Score: {accuracy:.4f}\n")
 print("Classification Report:")
 print(classification_report(y_test, y_pred))
 
-# KNN Question 2
-#Repeat KNN Question 1 using the scaled data (X_train_scaled, X_test_scaled). Print the accuracy score. Add a comment: does scaling improve performance, hurt it, or make no difference? Why might that be for this particular dataset?
+# Q2
+#Repeat KNN Question 1 using the scaled data (X_train_scaled, X_test_scaled). Print the accuracy score.
 # Initialize the model with 5 neighbors
 knn_scaled = KNeighborsClassifier(n_neighbors=5)
 
@@ -94,12 +92,11 @@ y_pred_scaled = knn_scaled.predict(X_test_scaled)
 accuracy_scaled = accuracy_score(y_test, y_pred_scaled)
 print(f"Scaled Data Accuracy Score: {accuracy_scaled:.4f}")
 
-# For this particular dataset, scaling makes no difference in performance
-# because the model already achieves a perfect 100% accuracy on the unscaled data,
-# leaving no room for numerical improvement.
-# Additionally, the original features in the Iris dataset are already in the same unit (centimeters) and have similar ranges, meaning no single feature was baseline-dominating the distance calculations.
+# Add a comment: does scaling improve performance, hurt it, or make no difference? Why might that be for this particular dataset?
+# Comment: Scaling made no difference because Iris features have similar ranges and the dataset is easily separated.
 
-#KNN Question 3
+
+# Q3
 #Using cross_val_score with cv=5, evaluate the k=5 KNN model on the unscaled training data.
 # Print each fold score, the mean, and the standard deviation.
 
@@ -118,7 +115,7 @@ print(f"Standard Deviation   : {cv_scores.std():.4f}")
 # Cross-validation is more trustworthy than a single train/test split because it evaluates the model across multiple distinct subsets of the data, reducing the likelihood
 # that the performance score is artificially inflated or deflated by a lucky or unlucky random split.
 
-#KNN Question 4
+# Q4
 #Loop over k values [1, 3, 5, 7, 9, 11, 13, 15]. For each,
 # compute 5-fold cross-validation accuracy on the unscaled training data and print k and the mean CV score.
 
@@ -138,7 +135,9 @@ for k in k_values:
 # I would choose k = 7 because it ties for the highest mean cross-validation accuracy (0.9750) while using a larger neighborhood than k = 3,
 # which offers better smoothing against noise and reduces the risk of overfitting.
 
-#----Classifier Evaluation Question 1-----
+#---- Classifier Evaluation -----
+
+# Q1
 
 # Generate the confusion matrix using predictions from KNN Question 1
 cm = confusion_matrix(y_test, y_pred)
@@ -146,9 +145,6 @@ cm = confusion_matrix(y_test, y_pred)
 # Display the confusion matrix
 disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=iris.target_names)
 disp.plot(cmap=plt.cm.Blues)
-
-# Ensure the outputs directory exists before saving
-os.makedirs("outputs", exist_ok=True)
 
 # Save the figure
 plt.savefig("outputs/knn_confusion_matrix.png", bbox_inches='tight')
@@ -158,7 +154,9 @@ plt.show()
 # For this particular dataset,
 # the model achieved 100% accuracy on the test set, meaning it did not confuse any pair of species.
 
-# ----Decision Trees Question 1----
+# --- The sklearn API: Decision Trees ---
+
+# Q1
 
 # Initialize the Decision Tree Classifier
 dt_classifier = DecisionTreeClassifier(max_depth=3, random_state=42)
@@ -184,44 +182,42 @@ print(classification_report(y_test, y_pred_dt))
 # Scaling the data would not affect the Decision Tree result because tree-based models split features based on value thresholds rather than distance metrics,
 # making them invariant to monotonic feature scaling.
 
-# ---Logistic Regression and Regularization---
-# Logistic Regression Question 1
+# --- Logistic Regression and Regularization ---
 
-c_values = [0.01, 1.0, 100]
+# Q1
+# One-vs-Rest wrapper enables multiclass logistic regression with liblinear.
 
-for c in c_values:
-    # I'm using 1.9.0 version, wrap liblinear in OneVsRestClassifier so version 1.9.0 allows it,
-    # otherwise it raises an error
-    base_model = LogisticRegression(C=c, max_iter=1000, solver='liblinear')
-    model = OneVsRestClassifier(base_model)
-    
-    # Fit the model
-    model.fit(X_train_scaled, y_train)
-    
-    coefs = np.array([estimator.coef_[0] for estimator in model.estimators_])
-    
-    # Calculate the total size of all coefficients
-    coef_size = np.abs(coefs).sum()
-    
-    print(f"C = {c:<6} | Total Size of Coefficients = {coef_size:.4f}")
+for C in [0.01, 1.0, 100]:
+    log_reg = OneVsRestClassifier(
+        LogisticRegression(
+            C=C,
+            max_iter=1000,
+            solver="liblinear",
+        )
+    )
+
+    log_reg.fit(X_train_scaled, y_train)
+    coef_sum = np.abs(
+        np.vstack([est.coef_ for est in log_reg.estimators_])
+    ).sum()
+    # coef_sum = np.abs(log_reg.estimators_[0].coef_).sum()
+    print(f"C={C}, total coefficient magnitude={coef_sum}")
 
 
-# COMMENT: what happens to the total coefficient magnitude as C increases?
-# As C increases, the total coefficient magnitude also increases significantly.
-# What does this tell you about what regularization is doing?
-# This demonstrates that a smaller C value applies stronger regularization,
-# penalizing large weights to prevent overfitting, while a larger C value relaxes this penalty,
-# allowing the model weights to grow larger to fit the training data more closely.
+# COMMENT: what happens to the total coefficient magnitude as C increases? # What does this tell you about what regularization is doing?
+# As C increases, the coefficient magnitude increases because weaker regularization allows larger weights.
+# Smaller C applies stronger regularization and keeps coefficients smaller.
 
-# ----PCA----
+
+# ---- PCA ---
 
 # Data-loading block
 digits = load_digits()
 X_digits = digits.data    # 1797 images, each flattened to 64 pixel values
 y_digits = digits.target  # digit labels 0-9
-images   = digits.images  # same data shaped as 8x8 images for plotting
+images = digits.images    # same data shaped as 8x8 images for plotting
 
-# PCA Question 1
+# Q1
 
 # Print the shapes
 print("X_digits shape:", X_digits.shape)
@@ -241,14 +237,11 @@ for digit in range(10):
 
 plt.tight_layout()
 
-# Ensure the outputs directory exists before saving
-os.makedirs("outputs", exist_ok=True)
-
 # Save and show the figure
 plt.savefig("outputs/sample_digits.png", bbox_inches='tight')
 plt.show()
 
-# PCA Q2
+# Q2
 
 # Fit PCA on X_digits (retains all 64 components by default)
 pca = PCA()
@@ -267,9 +260,6 @@ plt.xlabel('Principal Component 1')
 plt.ylabel('Principal Component 2')
 plt.title('2D PCA Projection of Handwritten Digits')
 
-# Ensure the outputs directory exists before saving
-os.makedirs("outputs", exist_ok=True)
-
 # Save and show the figure
 plt.savefig("outputs/pca_2d_projection.png", bbox_inches='tight')
 plt.show()
@@ -278,7 +268,7 @@ plt.show()
 # Yes, same-digit images visibly tend to cluster together in this 2D space,
 # though there is some overlap between certain classes due to the structural complexity that cannot be fully captured in only two dimensions.
 
-# PCA Q3
+# Q3
 
 # Calculate the cumulative sum of the explained variance ratio
 cumulative_variance = np.cumsum(pca.explained_variance_ratio_)
@@ -297,9 +287,6 @@ plt.title('Cumulative Explained Variance vs. Number of Components')
 plt.grid(True, linestyle=':', alpha=0.6)
 plt.legend()
 
-# Ensure the outputs directory exists before saving
-os.makedirs("outputs", exist_ok=True)
-
 # Save and show the figure
 plt.savefig("outputs/pca_variance_explained.png", bbox_inches='tight')
 plt.show()
@@ -308,7 +295,7 @@ plt.show()
 # Based on the data,
 # need approximately 13 components to explain 80% of the variance in the digits dataset.
 
-# PCA Q4
+# Q4
 
 def reconstruct_digit(sample_idx, scores, pca, n_components):    
     """Reconstruct one digit using the first n_components principal components."""    
@@ -328,7 +315,14 @@ fig, axes = plt.subplots(len(n_values) + 1, num_digits, figsize=(10, 12))
 for col in range(num_digits):
     axes[0, col].imshow(images[col], cmap='gray_r')
     axes[0, col].axis('off')
-axes[0, 0].set_ylabel("Original", rotation=0, labelpad=40, verticalalignment='center', fontweight='bold')
+
+axes[0, 0].set_ylabel(
+    "Original",
+    rotation=0,
+    labelpad=60,
+    verticalalignment='center',
+    fontweight='bold'
+)
 
 # Rows 1 to 4: Plot reconstructions for each n_components value
 for row_idx, n in enumerate(n_values, start=1):
@@ -336,18 +330,22 @@ for row_idx, n in enumerate(n_values, start=1):
         reconstructed_img = reconstruct_digit(col, scores, pca, n)
         axes[row_idx, col].imshow(reconstructed_img, cmap='gray_r')
         axes[row_idx, col].axis('off')
+
     # Label the row with the number of components used
-    axes[row_idx, 0].set_ylabel(f"n = {n}", rotation=0, labelpad=40, verticalalignment='center', fontweight='bold')
+    axes[row_idx, 0].set_ylabel(
+        f"n = {n} components",
+        rotation=0,
+        labelpad=60,
+        verticalalignment='center',
+        fontweight='bold'
+    )
 
 plt.tight_layout()
-
-# Ensure the outputs directory exists before saving
-os.makedirs("outputs", exist_ok=True)
 
 # Save and show the figure
 plt.savefig("outputs/pca_reconstructions.png", bbox_inches='tight')
 plt.show()
 
-# Comment: at what n do the digits become clearly recognizable, and does that match where the variance curve levels off?
-# The digits become clearly recognizable around n = 15,
-# which perfectly matches where the variance curve in Question 3 begins to level off after crossing the 80% threshold.
+# Comment:
+# Observation: the digits appear more recognizable around n = 15,
+# and this is roughly consistent with the point where the explained variance curve begins to level off.

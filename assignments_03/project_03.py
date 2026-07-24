@@ -56,6 +56,34 @@ print(f"Total number of emails: {total_emails}")
 print(f"Ham (0) count: {class_counts[0]} ({class_percentages[0]:.2f}%)")
 print(f"Spam (1) count: {class_counts[1]} ({class_percentages[1]:.2f}%)")
 
+# -----------------------------------------------------
+# Dataset Balance Discussion
+# -----------------------------------------------------
+#
+# The dataset contains more ham (non-spam) emails than
+# spam emails, but the imbalance is not extreme.
+#
+# Because the classes are not perfectly balanced,
+# accuracy alone is not enough to evaluate a classifier.
+# A model could obtain a high accuracy by predicting the
+# majority class more often.
+#
+# For this reason, precision, recall, and the F1-score
+# should also be considered when evaluating spam
+# detection models.
+# -----------------------------------------------------
+
+print("""
+Dataset Discussion:
+The dataset contains more ham emails than spam emails,
+so the classes are moderately imbalanced. This means
+accuracy should not be interpreted by itself because a
+model could achieve a relatively high accuracy simply by
+predicting the majority class. Precision, recall, and
+the F1-score provide a more complete picture of model
+performance.
+""")
+
 # 3. Generate and Save Boxplots
 # Apply a log scale (y+1) because the distribution contains heavy right-skewed outliers
 features_to_plot = ["word_freq_free", "char_freq_!", "capital_run_length_total"]
@@ -81,6 +109,20 @@ for col in features_to_plot:
     plt.close()
 
 print("Boxplots saved successfully to the 'outputs/' directory.")
+
+print("""
+Boxplot Observations:
+Spam emails generally contain higher values for
+word_freq_free, char_freq_!, and
+capital_run_length_total than ham emails.
+
+Although there is some overlap between the two classes,
+spam emails tend to use promotional words, excessive
+punctuation, and longer runs of capital letters more
+frequently. These differences suggest that these
+features may help machine learning models distinguish
+spam from legitimate emails.
+""")
 
 # Task 2: Prepare Your Data
 
@@ -222,10 +264,10 @@ plt.grid(True)
 plt.legend()
 
 plt.tight_layout()
-plt.savefig("outputs/pca_explained_variance.png")
+plt.savefig("outputs/spam_pca_explained_variance.png")
 plt.close()
 
-print("PCA explained variance plot saved to outputs/pca_explained_variance.png")
+print("PCA explained variance plot saved to outputs/spam_pca_explained_variance.png")
 
 
 # Transform the datasets using the learned PCA model
@@ -307,17 +349,49 @@ knn_pca_acc, knn_pca_predictions = run_evaluation(
 model_results["KNN PCA"] = knn_pca_acc
 predictions_store["KNN PCA"] = knn_pca_predictions
 
+# =====================================================
+# KNN Comparison
+# =====================================================
 
-# 4. Decision Tree Classifier - Tuning Max Depth
+print("\n" + "="*40)
+print("=== KNN: SCALED VS PCA COMPARISON ===")
+print("="*40)
 
-# Test different tree depths before choosing the final model.
-# A deeper tree can learn more details from the training data,
-# but it may overfit by memorizing noise instead of learning
-# general patterns.
+print("\nKNN Comparison:")
+print(f"Scaled KNN Accuracy : {knn_scaled_acc:.4f}")
+print(f"PCA KNN Accuracy    : {knn_pca_acc:.4f}")
 
-print("\n--- Decision Tree Depth Testing ---")
+difference = abs(knn_scaled_acc - knn_pca_acc)
+
+if knn_scaled_acc > knn_pca_acc:
+    print(f"""
+Scaled data performed better by {difference:.4f}.
+This suggests that PCA removed some information that was
+useful for KNN's distance calculations.
+""")
+elif knn_pca_acc > knn_scaled_acc:
+    print(f"""
+PCA performed better by {difference:.4f}.
+Reducing the dimensionality likely removed redundant
+features and improved KNN's ability to generalize.
+""")
+else:
+    print("""
+Both approaches achieved the same accuracy, indicating
+that PCA preserved the important information needed by
+KNN.
+""")
+
+
+# 4. Decision Tree Classifier - Depth Tuning
+
+print("\n" + "="*40)
+print("=== DECISION TREE DEPTH TESTING ===")
+print("="*40)
 
 depth_options = [3, 5, 10, None]
+
+depth_results = {}
 
 for depth in depth_options:
 
@@ -338,25 +412,40 @@ for depth in depth_options:
         dt_test.predict(X_test)
     )
 
+    depth_results[depth] = {
+        "train": train_accuracy,
+        "test": test_accuracy
+    }
+
     print(
         f"Depth {depth}: "
         f"Train Accuracy={train_accuracy:.4f}, "
         f"Test Accuracy={test_accuracy:.4f}"
     )
 
-# Select final depth based on the balance between training and testing performance.
-# Based on the results:
-#--- Decision Tree Depth Testing ---
-#Depth 3: Train Accuracy=0.8965, Test Accuracy=0.8849
-#Depth 5: Train Accuracy=0.9234, Test Accuracy=0.8990
-#Depth 10: Train Accuracy=0.9674, Test Accuracy=0.9088
-#Depth None: Train Accuracy=0.9997, Test Accuracy=0.9110
-# Chosen depth: 10
-# Depth 10 provides nearly the best test accuracy while keeping the tree
-# less complex than an unlimited tree. The unlimited model shows signs of
-# overfitting by achieving almost perfect training accuracy with only a
-# small improvement in test accuracy.
-
+# -----------------------------------------------------
+# Production Decision:
+# -- Decision Tree Depth Testing ---
+# Depth 3: Train Accuracy=0.8965, Test Accuracy=0.8849
+# Depth 5: Train Accuracy=0.9234, Test Accuracy=0.8990
+# Depth 10: Train Accuracy=0.9674, Test Accuracy=0.9088
+# Depth None: Train Accuracy=0.9997, Test Accuracy=0.9110
+#
+# I selected max_depth=10 for the production model.
+#
+# Although the unlimited-depth tree achieved a slightly
+# higher test accuracy (0.9110) compared with depth 10
+# (0.9088), the improvement was very small (0.22%).
+#
+# However, the unlimited tree achieved nearly perfect
+# training accuracy (0.9997), compared with 0.9674 for
+# depth 10. This large gap between training and testing
+# performance indicates overfitting.
+#
+# Therefore, max_depth=10 provides a better balance between
+# accuracy, model complexity, and generalization to new
+# data.
+# -----------------------------------------------------
 
 chosen_depth = 10
 
@@ -395,6 +484,61 @@ rf_accuracy, rf_predictions = run_evaluation(
 model_results["Random Forest"] = rf_accuracy
 predictions_store["Random Forest"] = rf_predictions
 
+# Decision Tree Feature Importances
+
+dt_importances = pd.Series(
+    production_dt.feature_importances_,
+    index=X_train.columns
+).sort_values(ascending=False)
+
+print("\nTop 10 Decision Tree Feature Importances")
+print(dt_importances.head(10))
+
+# Random Forest Feature Importances
+rf_importances = pd.Series(
+    rf_model.feature_importances_,
+    index=X_train.columns
+).sort_values(ascending=False)
+
+print("\nTop 10 Random Forest Feature Importances")
+print(rf_importances.head(10))
+
+# Save the required figure
+plt.figure(figsize=(10,6))
+
+rf_importances.head(10).plot(kind="bar")
+
+plt.title("Top 10 Random Forest Feature Importances")
+plt.xlabel("Feature")
+plt.ylabel("Importance")
+
+plt.xticks(rotation=45, ha="right")
+plt.tight_layout()
+
+plt.savefig("outputs/feature_importances.png")
+plt.close()
+
+print("Random Forest feature importance plot saved to outputs/feature_importances.png")
+
+print("""
+Feature Importance Discussion:
+
+The Decision Tree and Random Forest identified many of the
+same important features, although the Random Forest
+distributed importance more evenly across multiple
+features.
+
+Several of the highest-ranked features are related to
+words and character frequencies that are commonly found
+in spam emails, which matches the intuition that spam
+messages often contain promotional language and unusual
+symbols.
+
+Because the Random Forest averages many trees, its feature
+importance estimates are generally more stable than those
+from a single Decision Tree.
+""")
+
 # 6. LogisticRegression trained on SCALED data vs PCA-REDUCED data
 
 lr_scaled_acc, lr_scaled_predictions = run_evaluation(
@@ -427,6 +571,41 @@ lr_pca_acc, lr_pca_predictions = run_evaluation(
 model_results["Logistic Regression PCA"] = lr_pca_acc
 predictions_store["Logistic Regression PCA"] = lr_pca_predictions
 
+# =====================================================
+# Logistic Regression Comparison 
+# =====================================================
+
+print("\n" + "="*40)
+print("=== LOGISTIC REGRESSION: SCALED VS PCA COMPARISON ===")
+print("="*40)
+
+print(f"Scaled Accuracy : {lr_scaled_acc:.4f}")
+print(f"PCA Accuracy    : {lr_pca_acc:.4f}")
+
+difference = abs(lr_scaled_acc - lr_pca_acc)
+
+if lr_scaled_acc > lr_pca_acc:
+    print(f"""
+Scaled data performed better by {difference:.4f}.
+
+This indicates that using the original scaled features
+retained slightly more useful information than the
+PCA-reduced dataset.
+""")
+elif lr_pca_acc > lr_scaled_acc:
+    print(f"""
+PCA performed better by {difference:.4f}.
+
+Removing redundant features appears to have slightly
+improved Logistic Regression's performance.
+""")
+else:
+    print("""
+Both approaches achieved the same accuracy, showing that
+PCA preserved nearly all of the useful predictive
+information.
+""")
+
 # Final Model Comparison and Analysis
 
 # Display accuracy comparison for all models
@@ -450,40 +629,57 @@ print("\n--- Best Performing Model ---")
 print(f"Model: {best_model_name}")
 print(f"Test Accuracy: {best_accuracy:.4f}")
 
+print("""
+Overall Discussion:
+
+The Random Forest achieved the highest overall test
+accuracy, making it the strongest classifier for this
+dataset. Its ensemble approach combines many decision
+trees, reducing overfitting while capturing complex
+relationships between features.
+
+The Decision Tree showed increasing training accuracy as
+tree depth increased, while test accuracy improved only
+slightly. This indicates that deeper trees began to
+overfit the training data.
+
+For KNN and Logistic Regression, comparing scaled data
+with PCA-reduced data demonstrated whether reducing the
+number of features improved classification performance.
+The scaled feature sets
+performed better for both KNN and Logistic Regression.
+""")
 
 # =====================================================
-# PCA Comparison
+# Hypothesis Comparison Summary
 # =====================================================
 
 print("\n" + "="*40)
-print("=== PCA VS NON-PCA COMPARISON ===")
+print("=== HYPOTHESIS COMPARISON SUMMARY ===")
 print("="*40)
 
+print("""
+The results partially supported my hypothesis from Task 2.
 
-print("\nKNN Comparison:")
-print(f"Scaled KNN Accuracy : {knn_scaled_acc:.4f}")
-print(f"PCA KNN Accuracy    : {knn_pca_acc:.4f}")
+I expected PCA to improve KNN performance by reducing
+noise and removing redundant features. However, KNN
+performed slightly better using scaled data (0.9077)
+compared with PCA-reduced data (0.9066). This suggests
+that some original features contained useful information
+for KNN's distance calculations.
 
-if knn_pca_acc > knn_scaled_acc:
-    print("Result: PCA improved KNN performance.")
-elif knn_pca_acc < knn_scaled_acc:
-    print("Result: Scaled features performed better than PCA.")
-else:
-    print("Result: Both approaches performed the same.")
+I also expected Logistic Regression to perform similarly
+with scaled and PCA-reduced data. This was partially
+supported because both approaches performed well, but
+scaled data achieved higher accuracy (0.9294) compared
+with PCA (0.9186).
 
-
-print("\nLogistic Regression Comparison:")
-print(f"Scaled Logistic Regression Accuracy : {lr_scaled_acc:.4f}")
-print(f"PCA Logistic Regression Accuracy    : {lr_pca_acc:.4f}")
-
-if lr_pca_acc > lr_scaled_acc:
-    print("Result: PCA improved Logistic Regression performance.")
-elif lr_pca_acc < lr_scaled_acc:
-    print("Result: Scaled features performed better than PCA.")
-else:
-    print("Result: Both approaches performed the same.")
-
-
+Overall, PCA successfully reduced the number of features
+from 57 to 43 while preserving 90.68% of the variance,
+but it did not improve model performance. The scaled
+feature sets produced better results for both KNN and
+Logistic Regression.
+""")
 
 # =====================================================
 # Spam Filter Discussion
@@ -494,20 +690,26 @@ print("=== SPAM FILTER METRIC DISCUSSION ===")
 print("="*40)
 
 print("""
-Accuracy alone is not enough to judge a spam filter.
+Spam Filter Discussion:
 
-A false positive happens when a legitimate email is incorrectly classified
-as spam. This can be a problem because important emails may be lost.
+Accuracy alone is not the best metric for evaluating a
+spam filter.
 
-A false negative happens when spam is incorrectly classified as legitimate.
-This allows unwanted emails into the inbox.
+I would prioritize minimizing false positives because a
+false positive incorrectly marks a legitimate email as
+spam. Missing an important email could have more serious
+consequences than receiving an unwanted spam message.
 
-For a real spam detection system, precision and recall should both be
-considered. Precision is especially important because users usually want
-emails marked as spam to actually be spam.
+Although false negatives allow spam into the inbox,
+users can usually delete those messages manually.
+Therefore, precision is especially important, while
+recall should also be monitored to ensure that too much
+spam is not missed.
+
+Considering accuracy together with precision, recall,
+and the F1-score provides a much more complete
+evaluation of a spam detection system.
 """)
-
-
 
 # =====================================================
 # Confusion Matrix for Best Model
@@ -563,6 +765,19 @@ plt.close()
 
 
 print("\nConfusion matrix saved successfully.")
+print("""
+Confusion Matrix Interpretation:
+
+The Random Forest model produced more false negatives
+(33) than false positives (18). This means the model is
+more likely to allow spam messages into the inbox than to
+incorrectly block legitimate emails.
+
+For a spam filter, this may be acceptable depending on the
+goal of the system. However, if preventing unwanted spam
+is the priority, improving recall for the spam class would
+be important.
+""")
 
 
 # Task 4: Cross-Validation
@@ -588,7 +803,7 @@ cv_models = {
         ('knn', KNeighborsClassifier(n_neighbors=5))
     ]),
     
-    "4. Decision Tree (max_depth=5)": DecisionTreeClassifier(max_depth=chosen_depth, random_state=42),
+    f"4. Decision Tree (max_depth={chosen_depth})": DecisionTreeClassifier(max_depth=chosen_depth, random_state=42),
     
     "5. Random Forest": RandomForestClassifier(random_state=42),
     
@@ -628,7 +843,7 @@ print(f"Most Stable Model (Lowest Var): {most_stable} (Std Dev: {cv_results[most
 
 # VARIANCE COMPARISON: RANDOM FOREST VS DECISION TREE
 
-dt_std = cv_results["4. Decision Tree (max_depth=5)"][1]
+dt_std = cv_results[f"4. Decision Tree (max_depth={chosen_depth})"][1]
 rf_std = cv_results["5. Random Forest"][1]
 
 print(f"\nVariance Shootout:")
@@ -669,10 +884,10 @@ print(classification_report(y_test, tree_preds))
 
 
 # 2. Best Non-Tree-Based Pipeline (Logistic Regression vs. KNN)
-# Based on our shootout, Logistic Regression on scaled data typically outpaced KNN.
-# Note: Adjust the pipeline steps based on your specific Task 3/4 results. 
-# If PCA yielded higher accuracy for your non-tree model, include ('pca', PCA(n_components=n))
-# between the scaler and the classifier steps.
+# Logistic Regression was the best-performing non-tree model.
+# In Task 3, the scaled features achieved higher accuracy than the
+# PCA-reduced features, so this production pipeline includes
+# StandardScaler but does not include PCA.
 non_tree_pipeline = Pipeline([
     ('scaler', StandardScaler()),
     ('classifier', LogisticRegression(C=1.0, max_iter=1000, solver='liblinear'))
@@ -685,5 +900,10 @@ non_tree_preds = non_tree_pipeline.predict(X_test)
 print("\n[Pipeline Results]: Logistic Regression")
 print(classification_report(y_test, non_tree_preds))
 
-print("\nVerification: Performance reports successfully match earlier manual approaches.")
+print("""
+The non-tree production pipeline uses StandardScaler followed by
+Logistic Regression. PCA was not included because the scaled
+Logistic Regression model achieved higher accuracy than the
+PCA-reduced version in Task 3.
+""")
 
