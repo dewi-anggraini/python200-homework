@@ -97,24 +97,34 @@ def predict_new_weather(pipeline, metadata):
 
 # Task 3: Reflect
 
-"""
-Reflection and Evaluation Notes:
-
-1. Borderline Case Analysis:
-   - Day 4 acts as the borderline case (precipitation is 2.8 mm, right under 3.0 mm). 
-   - The model output probability typically hovers around ~54% (uncertain / coin-flip).
-   - If a model outputs 0.52, implement a safety buffer zone to avoid false confidence.
-2. Script Separation & Missing Files:
-   - Running `predict_weather.py` before training throws a `FileNotFoundError`.
-   - Handled gracefully via try-except blocks instructing users to execute training first.
-3. Production System Adaptations:
-   - Replace static dictionary inputs with active API calls (Open-Meteo Forecast endpoint), 
-     hook execution to a task scheduler, and route outputs via messaging webhooks.
-"""
+def print_reflections():
+    """
+    Print the required reflection notes and borderline case analysis 
+    so it is fully visible in the script's execution output.
+    """
+    print("\n" + "="*60)
+    print("TASK 3: MODEL REFLECTION & BORDERLINE CASE ANALYSIS")
+    print("="*60)
+    
+    print("\n1. Borderline Case Analysis (Day 4):")
+    print("   - Day 4 was intentionally designed with a precipitation of 2.95 mm,")
+    print("     sitting right under the 3.0 mm 'Good for Running' threshold.")
+    print("   - Result: The model outputs a probability hovering around ~50-54%,")
+    print("     reflecting high uncertainty (a near coin-flip) for edge-case conditions.")
+    
+    print("\n2. Script Architecture & Missing Files:")
+    print("   - If predict_weather.py is executed before training, a FileNotFoundError")
+    print("     is caught gracefully, instructing the user to run the trainer first.")
+    
+    print("\n3. Production System Adaptations:")
+    print("   - To scale this into a true production system, static dictionary inputs")
+    print("     should be replaced with live API calls to the Open-Meteo Forecast endpoint.")
+    print("="*60 + "\n")
 
 if __name__ == "__main__":
     # Task 1 & Task 2
     pipeline, metadata = load_and_verify_model()
     predict_new_weather(pipeline, metadata)
+    print_reflections()
 
 

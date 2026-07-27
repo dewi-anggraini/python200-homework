@@ -368,7 +368,10 @@ sample_probs = production_model.predict_proba(new_samples)
 # 5. Print results line by line
 print("\n--- Predictions on New Unscaled Samples ---")
 for i, (pred, proba) in enumerate(zip(sample_preds, sample_probs)):
-    print(f"Sample {i + 1}: Predicted Class = {pred} | Probabilities [Class 0, Class 1] = [{proba[0]:.4f}, {proba[1]:.4f}]")
+    pos_probability = proba[1] * 100
+    print(f"Sample {i + 1}: Predicted Class = {pred} | Probability of Positive Class = {pos_probability:.2f}% (Class 1)")
+#for i, (pred, proba) in enumerate(zip(sample_preds, sample_probs)):
+    #print(f"Sample {i + 1}: Predicted Class = {pred} | Probabilities [Class 0, Class 1] = [{proba[0]:.4f}, {proba[1]:.4f}]")
 
 # Comment:
 # What do you expect the all-zeros row to predict? Why?

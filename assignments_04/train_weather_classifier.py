@@ -21,6 +21,12 @@ from sklearn.preprocessing import StandardScaler
 # Step 1: Fetch the Data
 print("Fetching weather data for Jakarta (Indonesia)...")
 
+# --- LABEL ENGINEERING ---
+# Baseline instruction range: temperature_2m_max between 7°C and 26°C
+# ADAPTATION CHOICE: Because the target city is Jakarta, Indonesia (a tropical climate 
+# where daily max temperatures rarely drop to 7°C), the threshold was adapted to 
+# 20°C - 33°C to properly capture realistic running conditions for this location.
+
 # Jakarta's coordinates: Latitude -6.2088, Longitude 106.8456
 url = "https://archive-api.open-meteo.com/v1/archive"
 params = {
@@ -193,9 +199,10 @@ metadata = {
         "longitude": 106.8456,
     },
     "label_thresholds_description": (
-        "Good for running defined as: daily max temperature between 20°C and 33°C "
-        "(adjusted for Jakarta's tropical climate), daily min temperature >= 0°C, "
-        "total precipitation < 3.0 mm, and maximum wind speed < 30 km/h."
+        "Adapted from the baseline instruction range (7°C - 26°C) to 20°C - 33°C specifically for Jakarta's tropical climate. "
+        "Good for running defined as: daily max temp 20°C-33°C, min temp >= 0°C,"
+        "precipitation < 3.0 mm, wind speed < 30 km/h."
+        
     ),
 }
 
