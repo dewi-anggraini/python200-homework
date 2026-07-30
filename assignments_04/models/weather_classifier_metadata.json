@@ -16,5 +16,5 @@
         "latitude": -6.2088,
         "longitude": 106.8456
     },
-    "label_thresholds_description": "Adapted from the baseline instruction range (7\u00b0C - 26\u00b0C) to 20\u00b0C - 33\u00b0C specifically for Jakarta's tropical climate. Good for running defined as: daily max temp 20\u00b0C-33\u00b0C, min temp >= 0\u00b0C,precipitation < 3.0 mm, wind speed < 30 km/h."
+    "label_thresholds_description": "Good for running is defined as: temperature_2m_max between 20\u00b0C and 33\u00b0C, temperature_2m_min >= 0\u00b0C, precipitation_sum < 3.0 mm, and wind_speed_10m_max < 30 km/h. The maximum temperature threshold was adjusted to reflect Jakarta's tropical climate, as permitted by the assignment."
 }

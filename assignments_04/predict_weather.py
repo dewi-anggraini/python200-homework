@@ -35,9 +35,10 @@ def load_and_verify_model():
     print("MODEL METADATA VERIFICATION")
     print("="*40)
     print(f"City / Location : {metadata['location']['city']}")
-    print(f"Features Used    : {metadata['features']}")
-    print(f"Test AUC Score   : {metadata['test_auc']:.4f}")
-    print(f"Best Hyperparams : {metadata['best_hyperparameters']}")
+    print(f"Features Used   : {metadata['features']}")
+    print(f"Label Rules     : {metadata['label_thresholds_description']}")
+    print(f"Test AUC Score  : {metadata['test_auc']:.4f}")
+    print(f"Best Parameters : {metadata['best_hyperparameters']}")
     print("="*40 + "\n")
 
     return pipeline, metadata
@@ -97,34 +98,32 @@ def predict_new_weather(pipeline, metadata):
 
 # Task 3: Reflect
 
-def print_reflections():
-    """
-    Print the required reflection notes and borderline case analysis 
-    so it is fully visible in the script's execution output.
-    """
-    print("\n" + "="*60)
-    print("TASK 3: MODEL REFLECTION & BORDERLINE CASE ANALYSIS")
-    print("="*60)
-    
-    print("\n1. Borderline Case Analysis (Day 4):")
-    print("   - Day 4 was intentionally designed with a precipitation of 2.95 mm,")
-    print("     sitting right under the 3.0 mm 'Good for Running' threshold.")
-    print("   - Result: The model outputs a probability hovering around ~50-54%,")
-    print("     reflecting high uncertainty (a near coin-flip) for edge-case conditions.")
-    
-    print("\n2. Script Architecture & Missing Files:")
-    print("   - If predict_weather.py is executed before training, a FileNotFoundError")
-    print("     is caught gracefully, instructing the user to run the trainer first.")
-    
-    print("\n3. Production System Adaptations:")
-    print("   - To scale this into a true production system, static dictionary inputs")
-    print("     should be replaced with live API calls to the Open-Meteo Forecast endpoint.")
-    print("="*60 + "\n")
+# 1. Borderline Case
+# The fourth hypothetical day was intentionally designed as a
+# borderline example. Its precipitation (2.95 mm) is just below
+# the 3.0 mm threshold used when creating the training labels,
+# while the maximum temperature (33.0°C) and wind speed
+# (29.0 km/h) are also very close to their respective limits.
+# These values make the prediction more uncertain than the
+# clearly good or clearly bad examples.
+#
+# 2. Handling Missing Files
+# Before making predictions, the script attempts to load both
+# the trained model and its metadata. If either file is missing,
+# the program catches the FileNotFoundError and instructs the
+# user to run train_weather_classifier.py first instead of
+# crashing unexpectedly.
+#
+# 3. Future Improvements
+# This script currently predicts using manually created
+# hypothetical weather conditions. In a production application,
+# these values could be replaced with live forecast data from
+# the Open-Meteo Forecast API, allowing predictions to be made
+# automatically for upcoming weather conditions.
 
 if __name__ == "__main__":
     # Task 1 & Task 2
     pipeline, metadata = load_and_verify_model()
     predict_new_weather(pipeline, metadata)
-    print_reflections()
 
 
