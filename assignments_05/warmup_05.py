@@ -17,6 +17,7 @@ response = client.chat.completions.create(
 response_model = response.model
 tokens_used = response.usage.total_tokens
 
+print("API Q1 Output:")
 print(response.choices[0].message.content)
 print(f"Model Used: {response_model}")
 print(f"Total Tokens: {tokens_used}")
@@ -34,6 +35,7 @@ response = client.chat.completions.create(
     messages=[{"role": "user", "content": prompt}],
     temperature=0.0
 )
+print("API Q2 - Temperature 0.0:")
 print("Temperature setting: 0.0")
 print(f"Response: {response.choices[0].message.content}")
 
@@ -43,6 +45,7 @@ response = client.chat.completions.create(
     messages=[{"role": "user", "content": prompt}],
     temperature=0.7
 )
+print("API Q2 - Temperature 0.7:")
 print("Temperature setting: 0.7")
 print(f"Response: {response.choices[0].message.content}")
 
@@ -52,6 +55,7 @@ response = client.chat.completions.create(
     messages=[{"role": "user", "content": prompt}],
     temperature=1.5
 )
+print("API Q2 - Temperature 1.5:")
 print("Temperature setting: 1.5")
 print(f"Response: {response.choices[0].message.content}")
 
@@ -69,7 +73,7 @@ response = client.chat.completions.create(
     n=3,
     temperature=1.0
 )
-
+print("API Q3 Output:")
 print(f"Model Used: {response.model}")
 print(f"Total Tokens: {response.usage.total_tokens}")
 
@@ -85,8 +89,8 @@ response = client.chat.completions.create(
     messages=[{"role": "user", "content": "Give me a one-sentence fun fact about pandas (the animal, not the library)."}],
     max_tokens=15
 )
-
-print(f"Response: {response.choices[0].message.content}")
+print("API Q4 Output:")
+print(response.choices[0].message.content)
 print(f"Total Tokens: {response.usage.total_tokens}")
 
 # Comment: What happened, and why might you want to use max_tokens in a real application?
@@ -103,6 +107,7 @@ response = client.chat.completions.create(
     {"role": "user", "content": "I don't understand what a list comprehension is."}],
     
 )
+print("System Q1 - Patient Tutor:")
 print(response.choices[0].message.content)
 
 # Different role
@@ -121,6 +126,7 @@ response = client.chat.completions.create(
     # messages=[{"role": "assistant", "content": "You always explain things simply, straight to the point, and offer alternative ways."}],
     
 )
+print("System Q1 - Humorous Tutor:")
 print(response.choices[0].message.content)
 # Add a comment noting what changed.
 # The system message changed the assistant's personality from a patient,
@@ -138,7 +144,8 @@ response = client.chat.completions.create(
     {"role": "user", "content": "Can you remind me what my name is?"}]
     
 )
-print(f"Response:\n{response.choices[0].message.content}")
+print("System Q2 Output:")
+print(response.choices[0].message.content)
 
 # Add a comment: Why does the model know Jordan's name, even though it's stateless?
 # To the AI, it isn't "remembering" the past, it's just reading a transcript that I provided right now,
@@ -156,9 +163,20 @@ reviews = [
 prompt = f"""
 Classify the sentiment of the following text as Positive, Negative, or Mixed.
 
-Review 1: {reviews[0]}
-Review 2: {reviews[1]}
-Review 3: {reviews[2]}
+Return your answer in exactly this format:
+
+Review 1: <sentiment>
+Review 2: <sentiment>
+Review 3: <sentiment>
+
+Review 1:
+{reviews[0]}
+
+Review 2:
+{reviews[1]}
+
+Review 3:
+{reviews[2]}
 
 """
 
@@ -168,7 +186,7 @@ response = client.chat.completions.create(
         {"role": "user", "content": prompt}
     ]
 )
-
+print("Prompt Q1 Output:")
 print(response.choices[0].message.content)
 
 
@@ -201,7 +219,7 @@ response = client.chat.completions.create(
         {"role": "user", "content": prompt}
     ]
 )
-
+print("Prompt Q2 Output:")
 print(response.choices[0].message.content)
 # Comment: Add a comment: Did adding one example change the format or consistency of the output compared to Q1?
 #
@@ -246,7 +264,7 @@ response = client.chat.completions.create(
         {"role": "user", "content": prompt}
     ]
 )
-
+print("Prompt Q3 Output:")
 print(response.choices[0].message.content)
 
 # Comment: Add a comment comparing all three approaches (zero-shot, one-shot, few-shot):
@@ -277,7 +295,7 @@ response = client.chat.completions.create(
         {"role": "user", "content": prompt}
     ]
 )
-
+print("Prompt Q4 Output:")
 print(response.choices[0].message.content)
 # Comment:
 # Asking the model to reason step by step helps break a complex problem
@@ -309,7 +327,7 @@ response = client.chat.completions.create(
 )
 
 raw_response = response.choices[0].message.content
-print("Raw Response:")
+print("Prompt Q5 Output:")
 print(raw_response)
 
 try:
@@ -344,7 +362,7 @@ response = client.chat.completions.create(
         {"role": "user", "content": prompt}
     ]
 )
-
+print("Prompt Q6 - First Output:")
 print(response.choices[0].message.content)
 # second prompt
 passage = """Climate change significantly affects food security in many countries."""
@@ -363,7 +381,7 @@ response = client.chat.completions.create(
         {"role": "user", "content": prompt}
     ]
 )
-print("Second prompt output:")
+print("Prompt Q6 - Second Output:")
 
 print(response.choices[0].message.content)
 
@@ -371,6 +389,7 @@ print(response.choices[0].message.content)
 # Delimiters help prevent the model from confusing user provided text
 # with instructions. They help separate data from the actual task the model should follow.
 
+# --- Local Models with Ollama ---
 # Ollama Q1
 
 response = client.chat.completions.create(
@@ -388,21 +407,23 @@ print(response.choices[0].message.content)
 A large language model is an AI system that can understand and generate human language, allowing it to process
 vast amounts of text and perform tasks like writing, answering questions, or translating languages. It uses
 massive datasets to learn patterns in human speech, enabling it to understand context, semantics, and even create
-coherent responses."""
+coherent responses.
+"""
 
 # Comment: 
 # What differences did you notice between the two responses?
 # What is one advantage and one disadvantage of running a model locally?
 #
-# The OpenAI and Ollama responses were similar because both explained what
-# a large language model is. The OpenAI response may be more detailed, while
-# while Ollama provides the benefit of running locally.
+# # Both OpenAI and the local Qwen3:0.6b model correctly explained what a large
+# language model is, but the OpenAI response was more polished and detailed.
+# The local model gave a shorter, simpler explanation while still answering
+# the prompt correctly.
 #
 # One advantage of running a model locally is improved privacy because data
-# stays on my computer.
+# stays on the user's computer and does not need to be sent to an external service.
 #
-# One disadvantage is that local models require more hardware resources and
-# may be less capable than larger cloud-based models.
+# One disadvantage is that local models often require more computing resources
+# and may produce lower-quality responses than larger cloud-hosted models.
 
 
 # --- Optional / Extention Task ---
