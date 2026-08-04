@@ -227,12 +227,10 @@ def run_chatbot():
         # 5. Check if the user wants to rewrite bullets
         #    (hint: look for keywords like "bullet" or "resume" in user_input.lower())
         if "bullet" in user_input.lower() or "resume" in user_input.lower():
-            messages.append({
-                "role": "user",
-                "content": user_input
-            })
+
             print("\nJob Application Helper: Paste your bullet points below, one per line.")
             print("When you're done, type 'DONE' on its own line.\n")
+
             raw_bullets = []
             while True:
                 line = input().strip()
@@ -240,12 +238,24 @@ def run_chatbot():
                     break
                 if line:
                     raw_bullets.append(line)
+
+            bullet_request = (
+                user_input +
+                "\n\nOriginal bullet points:\n" +
+                "\n".join(raw_bullets)
+            )
+
+            messages.append({
+                "role": "user",
+                "content": bullet_request
+            })        
             # YOUR CODE: call rewrite_bullets() and print the results 
             result = rewrite_bullets(raw_bullets)
+            print(result)
 
             messages.append({
                 "role": "assistant",
-                "content": json.dumps(result)
+                "content": str(result)
             })
 
 
@@ -254,7 +264,18 @@ def run_chatbot():
             job_title = input("Job Application Helper: What is the job title? ").strip()
             background = input("Job Application Helper: Briefly describe your background: ").strip()
             # YOUR CODE: call generate_cover_letter() and print the result
-        
+            
+            cover_request = (
+                f"{user_input}\n\n"
+                f"Job title: {job_title}\n"
+                f"Background: {background}"
+            )
+
+            messages.append({
+                "role": "user",
+                "content": cover_request
+            })
+
             cover_letter = generate_cover_letter(job_title, background)            
             print(cover_letter)
 
@@ -295,7 +316,8 @@ if __name__ == "__main__":
 # How might this produce biased advice? Could it favor certain communication styles, industries, or cultural backgrounds?
 #
 # Hiring practices can vary between industries and regions. So It may not match the expectations of every field, this style may work well in some fields, industries
-# company culture, or cultural background. 
+# company culture, or cultural background. The chatbot may favor communication styles that are more common in the data it
+# was trained on.
 # Users should treat the output as a starting point and adjust it based on their own experiences, 
 # industry knowledge, and personal communication style.
 #
@@ -305,3 +327,7 @@ if __name__ == "__main__":
 # If a job-seeker submits the chatbot's output without reviewing it, 
 # the content may include inaccurate, exaggerated, 
 # or generic statements that do not fully represent the person's real skills and experience.
+# It may also contain mistakes
+# or wording that is not appropriate for the specific job or company. Reviewing
+# and editing the output helps ensure the application is accurate, honest, and
+# reflects the applicant's own qualifications.

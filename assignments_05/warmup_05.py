@@ -354,7 +354,7 @@ You will be given text inside triple backticks.
 If it contains step-by-step instructions, rewrite them as a numbered list.
 If it does not contain instructions, respond with exactly: "No steps provided."
 
-Passage: {passage}
+```{passage}```
 
 """
 response = client.chat.completions.create(
@@ -363,6 +363,7 @@ response = client.chat.completions.create(
         {"role": "user", "content": prompt}
     ]
 )
+print("Second prompt output:")
 
 print(response.choices[0].message.content)
 
@@ -370,7 +371,7 @@ print(response.choices[0].message.content)
 # Delimiters help prevent the model from confusing user provided text
 # with instructions. They help separate data from the actual task the model should follow.
 
-# Prompt Q6
+# Ollama Q1
 
 response = client.chat.completions.create(
     model="gpt-4o-mini",
@@ -382,7 +383,7 @@ print("OpenAI Response:")
 print(response.choices[0].message.content)
 
 
-# Ollama Output: 
+# Actual QWeb Ollama output (model: qwen3:0.6b): 
 """
 A large language model is an AI system that can understand and generate human language, allowing it to process
 vast amounts of text and perform tasks like writing, answering questions, or translating languages. It uses
