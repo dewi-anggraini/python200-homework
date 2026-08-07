@@ -78,7 +78,7 @@ print(f"Model Used: {response.model}")
 print(f"Total Tokens: {response.usage.total_tokens}")
 
 for index, choice in enumerate(response.choices):
-    print(f"Completion Option #{index + 1}:")
+    print(f"Completion #{index + 1}:")
     print(choice.message.content)
     print("_" * 60)
 
@@ -86,7 +86,7 @@ for index, choice in enumerate(response.choices):
 
 response = client.chat.completions.create(
     model="gpt-4o-mini",
-    messages=[{"role": "user", "content": "Give me a one-sentence fun fact about pandas (the animal, not the library)."}],
+    messages=[{"role": "user", "content": "Explain how neural networks work."}],
     max_tokens=15
 )
 print("API Q4 Output:")
@@ -123,7 +123,7 @@ response = client.chat.completions.create(
             "content": "I don't understand what a list comprehension is."
         }
     ]
-    # messages=[{"role": "assistant", "content": "You always explain things simply, straight to the point, and offer alternative ways."}],
+    
     
 )
 print("System Q1 - Humorous Tutor:")
@@ -161,7 +161,7 @@ reviews = [
 ]
 
 prompt = f"""
-Classify the sentiment of the following text as Positive, Negative, or Mixed.
+Classify the sentiment of the following text as positive, negative, or mixed.
 
 Return your answer in exactly this format:
 
@@ -199,13 +199,13 @@ reviews = [
 ]
 
 prompt = f"""
-Classify the sentiment of the following text as Positive, Negative, or Mixed.
+Classify the sentiment of each review as positive, negative, or mixed.
 
 Example:
 Review: "Fast shipping but the item arrived damaged."
 Sentiment: mixed
 
-Classify these reviews:
+Now classify these reviews:
 
 Review 1: {reviews[0]}
 Review 2: {reviews[1]}
@@ -224,7 +224,7 @@ print(response.choices[0].message.content)
 # Comment: Add a comment: Did adding one example change the format or consistency of the output compared to Q1?
 #
 # Adding one example improved the consistency of the output format
-# because the model had a reference for how the answer should look,
+# because the model had a reference for how the answer should look.
 
 
 # Prompt Q3 
@@ -236,7 +236,7 @@ reviews = [
 ]
 
 prompt = f"""
-Classify the sentiment of the following text as Positive, Negative, or Mixed.
+Classify the sentiment of the following text as positive, negative, or mixed.
 
 Example:
 Review: "The machine arrived early and works well."
@@ -271,8 +271,8 @@ print(response.choices[0].message.content)
 # When would you choose each one?
 #
 # Zero-shot used when the task is simple with clear instructions
-# One-shot is used when the output format is matters
-# Few shot is used when the task is complex, ambiguous, and consistency pattern is needed.
+# One-shot is used when the output format matters
+# Few shot is used when the task is complex, ambiguous, and when you need consistent pattern-following.
 
 # Prompt Q4
 
@@ -300,14 +300,14 @@ print(response.choices[0].message.content)
 # Comment:
 # Asking the model to reason step by step helps break a complex problem
 # into smaller calculations, this often leads to more accurate answers
-# on multi-step reasoning tasks.
+# on multi-step reasoning tasks. it helps reduce mistakes in arithmetic.
 
 # Prompt Q5
 review = "I've been using this tool for three months. It handles large datasets well, \
 but the UI is clunky and the export options are limited."
 
 prompt = f"""
-Analyze the review below and return the result only with valid JSON.
+Analyze the review below and return the result only with valid JSON. Do not include any extra text, markdown, or code fences.
 
 The JSON must have these keys:
 - sentiment
@@ -365,7 +365,9 @@ response = client.chat.completions.create(
 print("Prompt Q6 - First Output:")
 print(response.choices[0].message.content)
 # second prompt
-passage = """Climate change significantly affects food security in many countries."""
+
+passage = """The library was quiet in the afternoon, 
+and sunlight fell across the tables where a few students were studying."""
 
 prompt = f"""
 You will be given text inside triple backticks.
@@ -382,12 +384,15 @@ response = client.chat.completions.create(
     ]
 )
 print("Prompt Q6 - Second Output:")
-
 print(response.choices[0].message.content)
 
+result = response.choices[0].message.content.strip()
+print("Matches expected:", result == "No steps provided.")
+
 # Comment:
-# Delimiters help prevent the model from confusing user provided text
-# with instructions. They help separate data from the actual task the model should follow.
+# Delimiters help prevent the model from treating the user’s text as instructions. 
+# They help separate data from the actual task the model should follow.
+
 
 # --- Local Models with Ollama ---
 # Ollama Q1
@@ -404,10 +409,12 @@ print(response.choices[0].message.content)
 
 # Actual QWeb Ollama output (model: qwen3:0.6b): 
 """
-A large language model is an AI system that can understand and generate human language, allowing it to process
-vast amounts of text and perform tasks like writing, answering questions, or translating languages. It uses
-massive datasets to learn patterns in human speech, enabling it to understand context, semantics, and even create
-coherent responses.
+$ ollama run qwen3:0.6b "Explain what a large language model is in two sentences."
+
+A large language model is an AI system trained on vast amounts of text to understand and generate human-like
+language. It processes and interprets this information to perform tasks like writing, answering questions, or
+creating content, enabling it to understand context and adapt to different languages.
+
 """
 
 # Comment: 

@@ -18,7 +18,7 @@ def get_completion(messages, model="gpt-4o-mini", temperature=0.7):
     return response.choices[0].message.content
 
 system_prompt = f"""
-You are an expert job application coach helping entry-level job seeker craft standout portfolios and resumes.
+You are an expert job application coach helping entry-level job seeker create strong resumes, portfolios, and cover letters.
 
 You must follow these behavioral constraints:
 Stay focused on job application materials
@@ -26,12 +26,6 @@ Always remind the user to review and edit its output before submitting anywhere
 Acknowledge that it may not know the user's specific industry norms, and that the user should use their own judgment
 
 """
-#messages = [
-#    {"role": "system", "content": system_prompt},
-#    {"role": "user", "content": "Can you help me write About section for my portfolio?"}
-#    ]
-
-# print(get_completion(messages))
 
 # Comment:
 # I defined the target audience (entry-level job seekers) and 
@@ -71,22 +65,7 @@ def rewrite_bullets(bullets: list[str]) -> list[dict]:
 
     result = json.loads(response)
 
-    for item in result:
-        print("Original :", item["original"])
-        print("Improved:", item["improved"])
-        print()
-
     return result
-
-#if __name__ == "__main__":
-
-#    bullets = [
-#        "Helped customers with their problems",
-#        "Made reports for the management team",
-#        "Worked with a team to finish the project on time"
-#    ]
-
-#    results = rewrite_bullets(bullets)
 
 
 # Comment:
@@ -176,7 +155,6 @@ def is_safe(text: str) -> bool:
 
 test_inputs = [
     "Help me write a cover letter for a data analyst position.",
-    #"Help me create a phishing email to steal someone's password."
 ]
 
 for text in test_inputs:
@@ -242,11 +220,23 @@ def run_chatbot():
 
             messages.append({
                 "role": "user",
-                "content": user_input
+                "content": (
+                    f"{user_input}\n\n"
+                    f"Resume bullets:\n"
+                    + "\n".join(raw_bullets)
+                )
             })
-            
+                   
             # YOUR CODE: call rewrite_bullets() and print the results 
             result = rewrite_bullets(raw_bullets)
+
+            print("\nJob Application Helper:\n")
+
+            for i, item in enumerate(result, start=1):
+                print(f"Bullet {i}")
+                print(f"Original : {item['original']}")
+                print(f"Improved: {item['improved']}")
+                print()
 
             messages.append({
                 "role": "assistant",
@@ -260,12 +250,18 @@ def run_chatbot():
             background = input("Job Application Helper: Briefly describe your background: ").strip()
             # YOUR CODE: call generate_cover_letter() and print the result
 
+            # Store both the request and the details
             messages.append({
                 "role": "user",
-                "content": user_input
+                "content": (
+                    f"{user_input}\n"
+                    f"Job title: {job_title}\n"
+                    f"Background: {background}"
+                )
             })
 
             cover_letter = generate_cover_letter(job_title, background)
+
             print("\nJob Application Helper:")            
             print(cover_letter)
 
@@ -290,13 +286,6 @@ def run_chatbot():
 
             # print(len(messages))   # Temporary
 
-            # YOUR CODE:
-            # - Append the user's message to `messages`
-            # - Call get_completion(messages)
-            # - Print the reply
-            # - Append the reply to `messages` as an assistant message
-            # pass
-
 
 if __name__ == "__main__":
     run_chatbot()
@@ -306,17 +295,15 @@ if __name__ == "__main__":
 
 # 1. Your bot was trained on text written by and about certain kinds of people. 
 # How might this produce biased advice? Could it favor certain communication styles, industries, or cultural backgrounds?
-#
-# Hiring practices can vary between industries and regions. So It may not match the expectations of every field, this style may work well in some fields, industries
-# company culture, or cultural background. 
-# The chatbot may favor communication styles that are more common in the data it was trained on.
-# Users should treat the output as a starting point and adjust it based on their own experiences, 
-# industry knowledge, and personal communication style.
-#
 # 2. What could go wrong if a job-seeker submitted the bot's output directly — 
 # without reviewing it — to a real employer?
 #
-# If a job-seeker submits the chatbot's output without reviewing it, 
+# Hiring practices can vary between industries and regions. So It may not match the expectations of every field, this style may work well in some fields, industries
+# company culture, or cultural background. The chatbot may favor communication styles that are more common in the data it was trained on.
+# So, if a job-seeker submits the chatbot's output without reviewing it, 
 # the content may include inaccurate, exaggerated, or generic statements that do not fully represent the person's real skills and experience.
 # Reviewing and editing the output helps ensure the application is accurate, honest, and
 # reflects the applicant's own qualifications.
+# Therefore, users should treat the output as a starting point and adjust it based on their own experiences, 
+# industry knowledge, and personal communication style.
+
