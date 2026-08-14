@@ -10,10 +10,19 @@ load_dotenv()
 print("Environment variables loaded.")
 
 # Check that the document directory exists
-docs_dir = Path("../../python-200-v1/lessons/06_AI_augmentation/resources/groundwork_docs")
-assert docs_dir.exists(), f"Document directory not found: {docs_dir}"
+current_file = Path(__file__).resolve()
 
-print(f"Document directory found: {docs_dir}")
+docs_dir = (
+    current_file.parent.parent.parent
+    / "python-200-v1"
+    / "lessons"
+    / "06_AI_augmentation"
+    / "resources"
+    / "groundwork_docs"
+)
+
+assert docs_dir.exists(), "Document directory not found."
+print("Document directory found.")
 
 # Step 2: Load the Documents
 documents = SimpleDirectoryReader(
@@ -42,8 +51,6 @@ questions = [
     "How does the loyalty program work?",
     "How did Groundwork Coffee get started?",
     "Do you offer catering or wholesale orders?",
-    "What time is the Community Coffee Tasting?", # Extension C
-    "What new product is Groundwork launching?" # Extension C
 ]
 
 # Run each question through the query engine
@@ -145,6 +152,26 @@ correct.
 
 # Extension C: Add A New Document
 
+extension_query = "What new product is Groundwork launching?"
+
+extension_response = query_engine.query(extension_query)
+
+print("=" * 70)
+print(f"EXTENSION C QUERY: {extension_query}")
+print("=" * 70)
+
+print(f"\nANSWER:\n{extension_response}\n")
+
+top_node = extension_response.source_nodes[0]
+
+document_name = top_node.metadata.get("file_name", "Unknown")
+score = top_node.score if top_node.score is not None else "N/A"
+
+print("TOP RETRIEVED SOURCE:")
+print(f"Document: {document_name}")
+print(f"Similarity Score: {score}")
+
+
 # I added a new document called community_coffee_event.txt.
 # It has information about Groundwork's new Cold Brew Concentrate
 # and the Community Coffee Tasting event.
@@ -154,6 +181,6 @@ correct.
 # The assistant gave the correct answer, Cold Brew Concentrate,
 # and retrieved community_coffee_event.txt as the top source.
 #
-# This shows an advantage of RAG because I can add new information
+# This shows an advantage of RAG over fine tuning because I can add new information
 # by adding a new document and rebuilding the index. I do not have
 # to retrain the AI model. This makes it easier to update the assistant.

@@ -100,14 +100,16 @@ def simple_keyword_retrieval(query, documents, verbose=True):
     stopwords = {
         "a", "an", "the", "and", "or", "in", "on", "of", "for", "to", "is",
         "are", "was", "were", "by", "with", "at", "from", "that", "this",
-        "as", "be", "it", "its", "their", "they", "we", "you", "our"
+        "as", "be", "it", "its", "their", "they", "we", "you", "our", "your"
     }
     translator = str.maketrans("", "", string.punctuation)
 
     query_words = {
         w.translate(translator)
         for w in query.lower().split()
-        if w not in stopwords
+        for cleaned in [w.translate(translator)]
+        if cleaned and cleaned not in stopwords
+        # if w not in stopwords
     }
     if verbose:
         print(f"\nQuery tokens (filtered): {sorted(query_words)}")
@@ -117,7 +119,9 @@ def simple_keyword_retrieval(query, documents, verbose=True):
         content_words = {
             w.translate(translator)
             for w in content.lower().split()
-            if w not in stopwords
+            for cleaned in [w.translate(translator)]
+            if cleaned and cleaned not in stopwords
+            # if w not in stopwords
         }
         overlap = query_words & content_words
         score = len(overlap)
@@ -152,14 +156,14 @@ selected_result = simple_keyword_retrieval(query, documents, verbose=True)
 print(f"\nSelected Document: {selected_result[0][0]}")
 
 """
-Selected Document: loyalty.txt
+Selected Document: hours.txt
 
 Why it was selected:
-The function selected loyalty.txt because the word "your" from the
-question appears in that document. The word "your" was not removed
-as a stopword. This is an example of how keyword retrieval can choose
-the wrong document even when another document has the correct answer.
-The correct document should be hours.txt.
+The function correctly selected hours.txt because it has the strongest
+keyword overlap with the query. After stopword filtering, the important
+keywords include "hours" and "weekends", and both appear in hours.txt.
+Therefore, hours.txt receives the highest retrieval score and is selected
+as the most relevant document.
 """
 
 # Keyword Q2
@@ -537,12 +541,27 @@ whereas relevancy checks if the answer matches the *user's query*.
 
 Did the scores change between your two queries? If so, why do you think that happened?
 -----------------------------------------------------------------------------
-Yes, the scores dropped or flagged issues for the out-of-domain query. Because 
-cookie recipes are nowhere to be found in the Brightleaf Solar PDFs, either 
-the model correctly stated it couldn't find the information (resulting in a low 
-relevancy score for answering the query directly, or a fallback pass if it 
-gracefully declined), or it struggled to ground a response because the 
-retrieved chunks were entirely irrelevant.
+Yes, the scores changed between the two queries.
+
+For Query 1, "What employee benefits does BrightLeaf offer?", both the
+faithfulness and relevancy scores were 1.0. This indicates that the response
+was fully supported by the retrieved BrightLeaf documents and directly
+addressed the user's question. The query is in-domain because the documents
+contain information about BrightLeaf's employee benefits.
+
+For Query 2, "What is the recipe for chocolate chip cookies?", both the
+faithfulness and relevancy scores were 0.0. This query is out-of-domain
+because the BrightLeaf documents do not contain information about chocolate
+chip cookie recipes. As a result, the response was not supported by the
+retrieved context and did not provide a relevant answer to the user's
+question.
+
+The comparison shows that the evaluation scores can change significantly
+depending on whether the query matches the information available in the
+knowledge base. The in-domain query received perfect scores because the
+retrieved information supported the answer, while the unrelated query
+received zero scores because the necessary information was not present in
+the documents.
 
 
 What is the "LLM-as-a-judge" approach, and why is it used for RAG evaluation instead of a simple accuracy metric?
