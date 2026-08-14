@@ -146,19 +146,28 @@ for i, node in enumerate(failure_response.source_nodes, 1):
 # --- Step 6: Reflection ---
 # Comment:
 #
-# 1. I learned that LlamaIndex makes building a RAG system easier.
-# It needs less code because it handles things like chunking,
-# embedding, and indexing for us.
+# 1. The LlamaIndex implementation in my project took less
+# lines of code, while the manual semantic RAG implementation required
+# many more lines for chunking, embedding, and indexing. This shows me
+# that frameworks like LlamaIndex can save a lot of time and reduce the
+# amount of code we need to write. The framework handles many of the
+# complicated steps for us, which makes building a RAG system easier.
 #
-# 2. A useful business example is an employee help system.
-# Employees could ask questions about vacation, benefits,
-# insurance, and company rules. The system can find answers
-# from the company's documents.
+# 2. One useful business use case would be an employee help system.
+# A company could give the system documents about employee benefits,
+# vacation policies, health insurance, and workplace rules. Employees
+# could ask questions about these policies and get answers based on
+# the company's documents. This could save employees time and reduce
+# the number of basic questions that HR needs to answer.
 #
-# 3. I learned that RAG cannot always prevent wrong answers.
-# The AI can still misunderstand the information or give
-# an incorrect answer. RAG can reduce mistakes, but it
-# cannot guarantee that every answer is correct.
+# 3. One failure mode that RAG cannot fully prevent is the AI giving
+# an incorrect or made-up answer even when the correct document was
+# retrieved. The model might misunderstand the retrieved information
+# or combine it incorrectly. For example, if a company document says
+# that employees receive 10 vacation days, the AI could still answer
+# that employees receive 15 days. This shows that RAG can help reduce
+# incorrect answers, but it cannot guarantee that the AI will always
+# give the correct answer.
 
 
 

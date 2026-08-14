@@ -1,3 +1,16 @@
+from dotenv import load_dotenv
+import os
+from llama_index.core import SimpleDirectoryReader, VectorStoreIndex
+from llama_index.core.evaluation import FaithfulnessEvaluator, RelevancyEvaluator
+from llama_index.llms.openai import OpenAI
+
+
+if load_dotenv():
+    print("API key loaded successfully.")
+else:
+    print("Warning: could not load API key. Check your .env file.")
+
+
 # --- RAG Concepts ---
 # Concepts Q1
 
@@ -131,10 +144,11 @@ selected_result = simple_keyword_retrieval(query, documents, verbose=True)
 print(f"\nSelected Document: {selected_result[0][0]}")
 
 # Selected document: loyalty.txt
-# This was surprising because hours.txt seems like the best answer to the question.
-# Keyword retrieval only counts exact word overlap, so the query creates a tie between
-# hours.txt, hiring.txt, and loyalty.txt. Because of that, the final choice depends on
-# tie-breaking, which shows a weakness of keyword RAG.
+# This was surprising because hours.txt is the document that actually answers the question.
+# Keyword retrieval only uses exact word overlap, so it was misled by common words like "your"
+# and ended up choosing a less relevant document. This shows that keyword RAG can fail when
+# the best answer uses different wording than the query or when unhelpful overlaps affect the score.
+
 
 
 # Keyword Q2
@@ -144,11 +158,11 @@ query2 = "Do you have anything without caffeine?"
 selected_result_2 = simple_keyword_retrieval(query2, documents, verbose=True)
 print(f"\nSelected Document: {selected_result_2[0][0]}")
 
-# Selected document: None found
-# Keyword retrieval did not find any document because the query uses a synonym
-# ("caffeine") instead of the exact words in the documents. This is a case where
-# keyword RAG fails, and semantic retrieval would do better because it can match meaning
-# instead of only exact word overlap.
+# No document was selected
+# Keyword RAG did not get this right, because it failed to find the semantically relevant idea
+# Semantic retrieval would do better because “without caffeine” is related to drinks 
+# like decaf or non-coffee options, even though those exact words aren’t present
+
 
 
 # Keyword Q3
@@ -162,8 +176,12 @@ query3 = "How do I sign up for rewards?"
 selected_result_3 = simple_keyword_retrieval(query3, documents, verbose=True)
 print(f"\nSelected Document: {selected_result_3[0][0]}")
 
-# The result was surprising (Selected Document: None found), because the exact word overlap was lower than expected.
-# This shows that keyword retrieval depends heavily on the specific words used.
+# My prediction was loyalty.txt because "rewards" sounds most related to a loyalty program.
+# However, the function returned None found because it only matches exact keywords, and the
+# loyalty document uses different words like "loyalty," "points," and "redeem" instead of "rewards"
+# or "sign up." This shows that keyword retrieval can miss conceptually relevant documents when
+# the wording is different.
+
 
 
 # --- Semantic RAG Concepts ---
@@ -184,13 +202,15 @@ print(f"\nSelected Document: {selected_result_3[0][0]}")
 
 
 # Semantic Q2
-# | Feature                 | Keyword RAG                    | Semantic RAG                    |
-# |-------------------------|--------------------------------|---------------------------------|
-# | What is compared?       | Exact word overlap             | Meaning of the text(Vector embeddings using cosine similarity )              |
-# | What is retrieved?      | Full document                  | Relevant text chunks            |
-# | Can it handle synonyms? | No                             | Yes                             |
-# | Storage format          | Plain text dictionary          | Vector embeddings (e.g,. pgvector)              |
-# | Relevance score         | Number of overlapping keywords | Cosine similarity score (e.g., ranging from 0.0 to 1.0)|
+# | Feature                 | Keyword RAG                    | Semantic RAG                     |
+# |-------------------------|--------------------------------|----------------------------------|
+# | What is compared?       | Exact word overlap             | Embedding similarity / meaning   |
+# | What is retrieved?      | Full document                  | Relevant chunks                  |
+# | Can it handle synonyms? | No                             | Yes                              |
+# | Storage format          | Plain text dictionary          | Vector store / index             |
+# | Relevance score         | Number of overlapping keywords | Cosine similarity score          |
+
+
 
 
 # --- LlamaIndex ---
@@ -354,19 +374,18 @@ for i, node in enumerate(challenge_response.source_nodes, 1):
 
 
 # LlamaIndex Q4
-from llama_index.core.evaluation import FaithfulnessEvaluator, RelevancyEvaluator
-from llama_index.llms.openai import OpenAI
-
 # -------------------------------------------------------------
 # RAG EVALUATION USING LLM-AS-A-JUDGE
 # -------------------------------------------------------------
 
 # Instantiate the judge LLM using gpt-4o-mini
-judge_llm = OpenAI(model="gpt-4o-mini")
+llm = OpenAI(model="gpt-4o-mini", temperature=0.2)
+
 
 # Set up the evaluators
-faithfulness_evaluator = FaithfulnessEvaluator(llm=judge_llm)
-relevancy_evaluator = RelevancyEvaluator(llm=judge_llm)
+faithfulness_evaluator = FaithfulnessEvaluator(llm=llm)
+relevancy_evaluator = RelevancyEvaluator(llm=llm)
+
 
 # -------------------------------------------------------------
 # Evaluation Run 1: High-Quality Query (In-Domain)
@@ -376,6 +395,7 @@ response_good = query_engine.query(query_good)
 
 # Evaluate faithfulness (is the answer derived *only* from the retrieved context?)
 faith_result_good = faithfulness_evaluator.evaluate_response(
+    query=query_good,
     response=response_good
 )
 
@@ -387,9 +407,8 @@ rel_result_good = relevancy_evaluator.evaluate_response(
 print("=" * 70)
 print(f"QUERY 1 (Good): '{query_good}'")
 print(f"Faithfulness Score: {faith_result_good.score}")
-#print(f"Faithfulness Reasoning: {faith_result_good.passing}")
 print(f"Relevancy Score: {rel_result_good.score}")
-#print(f"Relevancy Reasoning: {rel_result_good.passing}")
+
 
 
 # -------------------------------------------------------------
@@ -399,6 +418,7 @@ query_bad = "What is the recipe for chocolate chip cookies?"
 response_bad = query_engine.query(query_bad)
 
 faith_result_bad = faithfulness_evaluator.evaluate_response(
+    query=query_bad,
     response=response_bad
 )
 
