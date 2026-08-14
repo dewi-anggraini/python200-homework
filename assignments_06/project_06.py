@@ -1,5 +1,5 @@
 # --- Groundwork Coffee Co. Q&A Assistant ---
-# Step 1: Setup
+# --- Step 1: Setup ---
 from pathlib import Path
 from dotenv import load_dotenv
 from llama_index.core import SimpleDirectoryReader, VectorStoreIndex
@@ -22,9 +22,17 @@ docs_dir = (
 )
 
 assert docs_dir.exists(), "Document directory not found."
-print("Document directory found.")
+print(f"Document directory found: {docs_dir}")
 
-# Step 2: Load the Documents
+
+# Comment:
+# I used Path(__file__) to build the path relative to this script instead of hard-coding
+# a full absolute path. Since the lesson repo is stored separately from my homework repo,
+# I go up to the Documents folder and then enter the python-200-v1 lesson folder.
+
+
+
+# ---- Step 2: Load the Documents ----
 documents = SimpleDirectoryReader(
     input_dir=str(docs_dir)
 ).load_data()
@@ -35,7 +43,9 @@ print("Files loaded:")
 for document in documents:
     print(f"- {document.metadata.get('file_name')}")
 
-# Step 3: Build the Index and Query Engine
+
+
+# ---- Step 3: Build the Index and Query Engine ----
 index = VectorStoreIndex.from_documents(documents)
 
 query_engine = index.as_query_engine(
@@ -44,7 +54,9 @@ query_engine = index.as_query_engine(
 
 print("\nIndex built successfully. Ready to answer questions.")
 
-# Step 4: Query the Assistant
+
+
+# ---- Step 4: Query the Assistant ----
 questions = [
     "What are Groundwork's hours on weekends?",
     "Do you offer any dairy-free milk options?",
@@ -53,7 +65,7 @@ questions = [
     "Do you offer catering or wholesale orders?",
 ]
 
-# Run each question through the query engine
+# Run each question through the query engine 
 for q in questions:
     print("=" * 70)
     print(f"QUESTION: {q}")
@@ -85,7 +97,9 @@ for q in questions:
 # expect. This shows that it is important to check the retrieved sources
 # instead of trusting the answer by itself.
 
-# Step 5: Find a Failure
+
+
+# --- Step 5: Find a Failure ----
 failure_query = "What is the population of Tokyo?"
 
 failure_response = query_engine.query(failure_query)
@@ -127,29 +141,30 @@ for i, node in enumerate(failure_response.source_nodes, 1):
 # the system can say "I don't have enough information in the documents"
 # instead of trying to answer every question.
 
-# Step 6: Reflection
-"""
-1. The lesson built semantic RAG manually, which required many lines
-of code for chunking, embedding, and indexing. In this project, the
-LlamaIndex version required much less code. LlamaIndex handled much
-of the complicated work for us. This shows that a framework can make
-building a RAG system faster and easier, especially when we do not
-need to build every part ourselves.
 
-2. One useful business use case would be an employee help system for
-a company. The company could give the system documents about employee
-benefits, vacation policies, health insurance, and workplace rules.
-Employees could then ask questions and get answers based on the
-company's documents instead of searching through many files.
 
-3. One failure mode that RAG cannot completely prevent is that the
-AI model can still give a wrong or made-up answer. Even if the system
-retrieves documents correctly, the model can misunderstand the
-information or combine it incorrectly. This means that RAG can reduce
-wrong answers, but it cannot guarantee that every answer will be
-correct.
-"""
+# --- Step 6: Reflection ---
+# Comment:
+#
+# 1. I learned that LlamaIndex makes building a RAG system easier.
+# It needs less code because it handles things like chunking,
+# embedding, and indexing for us.
+#
+# 2. A useful business example is an employee help system.
+# Employees could ask questions about vacation, benefits,
+# insurance, and company rules. The system can find answers
+# from the company's documents.
+#
+# 3. I learned that RAG cannot always prevent wrong answers.
+# The AI can still misunderstand the information or give
+# an incorrect answer. RAG can reduce mistakes, but it
+# cannot guarantee that every answer is correct.
 
+
+
+
+# --- Optional Extension C ---
+# This section is extra and does not replace the required project steps.
 # Extension C: Add A New Document
 
 extension_query = "What new product is Groundwork launching?"
@@ -171,16 +186,14 @@ print("TOP RETRIEVED SOURCE:")
 print(f"Document: {document_name}")
 print(f"Similarity Score: {score}")
 
-
 # I added a new document called community_coffee_event.txt.
-# It has information about Groundwork's new Cold Brew Concentrate
+# It includes information about Groundwork's new Cold Brew Concentrate
 # and the Community Coffee Tasting event.
 #
-# I tested it by asking:
+# I tested it with the question:
 # "What new product is Groundwork launching?"
-# The assistant gave the correct answer, Cold Brew Concentrate,
-# and retrieved community_coffee_event.txt as the top source.
+# The assistant returned the correct answer and retrieved
+# community_coffee_event.txt as the top source.
 #
-# This shows an advantage of RAG over fine tuning because I can add new information
-# by adding a new document and rebuilding the index. I do not have
-# to retrain the AI model. This makes it easier to update the assistant.
+# This shows one advantage of RAG over fine-tuning: I can update the assistant
+# by adding a new document and rebuilding the index, without retraining the model.
