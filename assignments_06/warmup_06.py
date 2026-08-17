@@ -1,7 +1,12 @@
-from dotenv import load_dotenv
+
 import os
+import string
+from pathlib import Path
+
+from dotenv import load_dotenv
 from llama_index.core import SimpleDirectoryReader, VectorStoreIndex
 from llama_index.core.evaluation import FaithfulnessEvaluator, RelevancyEvaluator
+from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.llms.openai import OpenAI
 
 
@@ -14,26 +19,19 @@ else:
 # --- RAG Concepts ---
 # Concepts Q1
 
-# Scenario A: A legal team wants an assistant that can answer questions about 
-# their internal policy library — hundreds of PDFs that are updated every quarter.
-#
-# Best approach : RAG
-# RAG is the best choice because there are many PDFs to search through,
-# and the PDFs are updated often. RAG lets the model find the right information
-# from the documents when it needs it.
+# Scenario A: 
+# Best approach: RAG
+# RAG is best here because the assistant needs to search through many documents
+# and use the most current information. Since the PDFs change regularly, retrieving
+# the right source text is better than retraining the model each time.
 
-# Scenario B: A startup wants their model to write product copy in a very specific 
-# brand voice — a dry, minimalist style that does not appear much online. They have 
-# 3,000 examples their in-house writers produced over the years.
-#
+# Scenario B: 
 # Best approach: Fine-tuning
-# Fine-tuning is the best choice because the company has 3,000 examples
-# of the writing style they want. These examples can teach the model to write
-# in their special brand voice.
+# Fine-tuning is best because the company has many examples of the exact style it
+# wants. Training on those examples can teach the model to consistently write in
+# that brand voice.
 
-# Scenario C: A data analyst needs to ask an LLM questions about a single 
-# two-page report she just received. She does not need this to work for any other document.
-#
+# Scenario C: 
 # Best approach: Prompt engineering
 # Prompt engineering is the best choice because there is only one short report.
 # The report can be given to the model along with the question, so there is no
@@ -54,38 +52,22 @@ else:
 
 
 # Concepts Q3
-# RAG Pipeline:
+# Correct RAG pipeline order:
 #
-# 1. Extract text from source documents
-#    Get the text out of PDFs, documents, or other files.
-#
-# 2. Split text into chunks
-#    Break the text into smaller pieces so they are easier to search.
-#
-# 3. Convert text chunks into embeddings
-#    Turn each chunk of text into numbers that represent its meaning.
-#
-# 4. Receive the user's query
-#    Get the question or request from the user.
-#
-# 5. Embed the user's query
-#    Turn the user's question into numbers so it can be compared to the chunks.
-#
-# 6. Retrieve the most relevant chunks
-#    Find the chunks that are most related to the user's question.
-#
-# 7. Inject retrieved chunks into the prompt
-#    Give the relevant chunks to the LLM along with the user's question.
-#
-# 8. Generate a response from the LLM
-#    The LLM uses the question and the retrieved information to create an answer.
+# 1. Extract text from source documents — load the text from PDFs or other files.
+# 2. Split text into chunks — break the documents into smaller pieces for retrieval.
+# 3. Convert text chunks into embeddings — turn each chunk into vectors that capture meaning.
+# 4. Receive the user's query — get the question from the user.
+# 5. Embed the user's query — convert the question into a vector.
+# 6. Retrieve the most relevant chunks — compare the query vector to the chunk vectors and select the best matches.
+# 7. Inject retrieved chunks into the prompt — add the selected chunks to the LLM input.
+# 8. Generate a response from the LLM — the model writes the final answer.
 #
 # Just for my undestanding: Easy way for me to remember it
 # Documents → Chunks → Embeddings → Question → Search → Prompt → Answer
 
 
 # --- Keyword RAG ---
-import string
 
 def simple_keyword_retrieval(query, documents, verbose=True):
     """Keyword retrieval using token overlap scoring."""
@@ -214,20 +196,28 @@ print(f"\nSelected Document: {selected_result_3[0][0]}")
 
 
 # --- LlamaIndex ---
-from dotenv import load_dotenv
-from llama_index.core import SimpleDirectoryReader, VectorStoreIndex
-
 
 # Load environment variables (makes sure OPENAI_API_KEY is available)
 load_dotenv()
 
 # LlamaIndex Q1
 # 1. Read the Brightleaf Solar PDFs from the specified path
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPOSITORY_ROOT = SCRIPT_DIR.parent
+DOCUMENTS_ROOT = REPOSITORY_ROOT.parent
 
-documents = SimpleDirectoryReader(
-    "../../python-200-v1/lessons/06_AI_augmentation/resources/brightleaf_pdfs"
-).load_data()
+docs_dir = (
+    DOCUMENTS_ROOT
+    / "python-200-v1"
+    / "lessons"
+    / "06_AI_augmentation"
+    / "resources"
+    / "brightleaf_pdfs"
+)
 
+assert docs_dir.exists(), f"Document directory not found: {docs_dir}"
+
+documents = SimpleDirectoryReader(docs_dir).load_data()
 
 # 2. Build the in-memory VectorStoreIndex (handles chunking, embedding, and storing)
 index = VectorStoreIndex.from_documents(documents)

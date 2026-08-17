@@ -1,19 +1,20 @@
 # --- Groundwork Coffee Co. Q&A Assistant ---
-# --- Step 1: Setup ---
 from pathlib import Path
 from dotenv import load_dotenv
 from llama_index.core import SimpleDirectoryReader, VectorStoreIndex
 
+# --- Step 1: Setup ---
+
 # Load environment variables
 load_dotenv()
+print("API key loaded.")
 
-print("Environment variables loaded.")
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPOSITORY_ROOT = SCRIPT_DIR.parent
+DOCUMENTS_ROOT = REPOSITORY_ROOT.parent
 
-# Check that the document directory exists
-current_file = Path(__file__).resolve()
-
-docs_dir = (
-    current_file.parent.parent.parent
+DOCS_DIR = (
+    DOCUMENTS_ROOT
     / "python-200-v1"
     / "lessons"
     / "06_AI_augmentation"
@@ -21,8 +22,8 @@ docs_dir = (
     / "groundwork_docs"
 )
 
-assert docs_dir.exists(), "Document directory not found."
-print(f"Document directory found: {docs_dir}")
+assert DOCS_DIR.exists(), f"Document directory not found: {DOCS_DIR}"
+print(f"Document directory found: {DOCS_DIR}")
 
 
 # Comment:
@@ -31,15 +32,15 @@ print(f"Document directory found: {docs_dir}")
 # I go up to the Documents folder and then enter the python-200-v1 lesson folder.
 
 
-
 # ---- Step 2: Load the Documents ----
 documents = SimpleDirectoryReader(
-    input_dir=str(docs_dir)
+    input_dir=str(DOCS_DIR)
 ).load_data()
 
 print(f"\nLoaded {len(documents)} documents.")
 
 print("Files loaded:")
+
 for document in documents:
     print(f"- {document.metadata.get('file_name')}")
 
@@ -47,7 +48,6 @@ for document in documents:
 
 # ---- Step 3: Build the Index and Query Engine ----
 index = VectorStoreIndex.from_documents(documents)
-
 query_engine = index.as_query_engine(
     similarity_top_k=3
 )
@@ -146,8 +146,8 @@ for i, node in enumerate(failure_response.source_nodes, 1):
 # --- Step 6: Reflection ---
 # Comment:
 #
-# 1. The LlamaIndex implementation in my project took less
-# lines of code, while the manual semantic RAG implementation required
+# 1. The LlamaIndex implementation in my project took only two lines
+# to build the query and index, while the manual semantic RAG implementation required
 # many more lines for chunking, embedding, and indexing. This shows me
 # that frameworks like LlamaIndex can save a lot of time and reduce the
 # amount of code we need to write. The framework handles many of the
