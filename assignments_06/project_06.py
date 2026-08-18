@@ -48,9 +48,7 @@ for document in documents:
 
 # ---- Step 3: Build the Index and Query Engine ----
 index = VectorStoreIndex.from_documents(documents)
-query_engine = index.as_query_engine(
-    similarity_top_k=3
-)
+query_engine = index.as_query_engine(similarity_top_k=3)
 
 print("\nIndex built successfully. Ready to answer questions.")
 

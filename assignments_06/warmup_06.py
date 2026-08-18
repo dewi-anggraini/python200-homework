@@ -19,20 +19,17 @@ else:
 # --- RAG Concepts ---
 # Concepts Q1
 
-# Scenario A: 
-# Best approach: RAG
+# Scenario A: RAG
 # RAG is best here because the assistant needs to search through many documents
 # and use the most current information. Since the PDFs change regularly, retrieving
 # the right source text is better than retraining the model each time.
 
-# Scenario B: 
-# Best approach: Fine-tuning
+# Scenario B: Fine-tuning
 # Fine-tuning is best because the company has many examples of the exact style it
 # wants. Training on those examples can teach the model to consistently write in
 # that brand voice.
 
-# Scenario C: 
-# Best approach: Prompt engineering
+# Scenario C: Prompt engineering
 # Prompt engineering is the best choice because there is only one short report.
 # The report can be given to the model along with the question, so there is no
 # need to train the model or build a large document database.
@@ -52,7 +49,6 @@ else:
 
 
 # Concepts Q3
-# Correct RAG pipeline order:
 #
 # 1. Extract text from source documents — load the text from PDFs or other files.
 # 2. Split text into chunks — break the documents into smaller pieces for retrieval.
@@ -125,11 +121,11 @@ documents = {
 selected_result = simple_keyword_retrieval(query, documents, verbose=True)
 print(f"\nSelected Document: {selected_result[0][0]}")
 
-# Selected document: loyalty.txt
-# This was surprising because hours.txt is the document that actually answers the question.
-# Keyword retrieval only uses exact word overlap, so it was misled by common words like "your"
-# and ended up choosing a less relevant document. This shows that keyword RAG can fail when
-# the best answer uses different wording than the query or when unhelpful overlaps affect the score.
+# Selected document: loyalty.txt, this was surprising because hours.txt is the document that actually answers the question.
+# hours.txt matches "weekends," while hiring.txt and loyalty.txt each match the common word "your," 
+# so all three documents score 1. Because the tuples are sorted in reverse order, loyalty.txt wins the
+# alphabetical tie-break. This exposes two limitations: the stopword list is
+# incomplete, and the tie-break is unrelated to meaning.
 
 
 
@@ -140,11 +136,12 @@ query2 = "Do you have anything without caffeine?"
 selected_result_2 = simple_keyword_retrieval(query2, documents, verbose=True)
 print(f"\nSelected Document: {selected_result_2[0][0]}")
 
-# No document was selected
-# Keyword RAG did not get this right, because it failed to find the semantically relevant idea
-# Semantic retrieval would do better because “without caffeine” is related to drinks 
-# like decaf or non-coffee options, even though those exact words aren’t present
-
+# No document was selected because none of the query words exactly matched words 
+# in the documents after filtering. Although menu.txt is the most semantically relevant document, 
+# keyword RAG cannot recognize that ‘without caffeine’ is related 
+# to drink options like decaf or non-coffee beverages. 
+# Semantic retrieval using embeddings would work better because it compares meaning 
+# rather than exact keywords.
 
 
 # Keyword Q3
@@ -186,10 +183,10 @@ print(f"\nSelected Document: {selected_result_3[0][0]}")
 # Semantic Q2
 # | Feature                 | Keyword RAG                    | Semantic RAG                     |
 # |-------------------------|--------------------------------|----------------------------------|
-# | What is compared?       | Exact word overlap             | Embedding similarity / meaning   |
-# | What is retrieved?      | Full document                  | Relevant chunks                  |
+# | What is compared?       | Exact word overlap             | Embedding similarity             |
+# | What is retrieved?      | Full document                  | Most relevant text chun          |
 # | Can it handle synonyms? | No                             | Yes                              |
-# | Storage format          | Plain text dictionary          | Vector store / index             |
+# | Storage format          | Plain text dictionary          | Vector store / index of embeding |           |
 # | Relevance score         | Number of overlapping keywords | Cosine similarity score          |
 
 
@@ -255,17 +252,20 @@ for q in questions:
 
 
 # Comment:
+#
 # Query 1 - "What employee benefits does BrightLeaf offer?"
-# The first retrieved chunk is very relevant because it talks about BrightLeaf's
-# employee benefits. The model sounds confident and specific because it gives
-# many examples of benefits. However, the second and third chunks seem less
-# relevant because one is about the company overview and one is about security.
+# The retrieved chunks were mostly relevant because the top chunk discussed
+# BrightLeaf's employee benefits directly. The model sounded confident and
+# specific because it listed several benefits from the documents. However, one
+# of the lower-ranked chunks was about the company overview, so it was less
+# relevant to the question.
 #
 # Query 2 - "What are BrightLeaf's security policies?"
-# The first retrieved chunk is very relevant because it is about network and
-# data security. The model sounds confident and specific because it gives many
-# details about BrightLeaf's security policies. The second chunk about employee
-# benefits is unexpected and does not seem relevant to the security question.
+# The retrieved chunks were also mostly relevant for this query because the top
+# chunk discussed network and data security. The model sounded confident and
+# detailed because it gave several security-related details. One of the
+# retrieved chunks about employee benefits was unexpected and not directly
+# relevant to the security question.
 
 
 # LiamaIndex Q2
