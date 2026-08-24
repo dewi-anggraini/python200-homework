@@ -27,13 +27,6 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 # Shared global DataFrame
 df = None
 
-print("DATA_PATH:", DATA_PATH)
-print("Exists:", os.path.exists(DATA_PATH))
-
-test_df = pd.read_csv(DATA_PATH)
-print("Shape:", test_df.shape)
-print("Columns:", test_df.columns.tolist())
-
 # --- Task 1: Define Your Tools ---
 
 # Tool 1: load_happiness_data
@@ -60,12 +53,7 @@ def load_happiness_data() -> dict:
         csv_files = sorted(
             glob.glob(str(YEARLY_DATA_DIR / "*.csv"))
         )
-        #csv_files = sorted(
-        #    glob.glob("assignments/resources/happiness_project/*.csv")
-        #)
-        #csv_files = sorted(
-        #    glob.glob("assignments/resources/happiness_project/*.csv")
-        #)
+
 
         if not csv_files:
             return {
@@ -224,16 +212,16 @@ agent = CodeAgent(
 ) 
 
 # --- Task 3: Run Guided Queries ---
-
-queries = [
-    "Load the happiness data and tell me its shape and column names.",
-    "Summarize the Happiness score column.",
-    "What is the correlation between GDP per capita and Happiness score? Is it statistically significant?",
-    "Show me the top 5 happiest countries in 2020.",
-    "Plot Happiness score over the years as a line chart, with one line per Regional indicator. Save the plot to outputs/happiness_by_region.png."
-]
-
 if __name__ == "__main__":
+    os.makedirs("outputs", exist_ok=True)
+
+    queries = [
+        "Load the happiness data and tell me its shape and column names.",
+        "Summarize the happiness_score column.",
+        "What is the correlation between gdp_per_capita and happiness_score? Is it statistically significant?",
+        "Show me the top 5 happiest countries in 2020.",
+        "Plot happiness_score over the years as a line chart, with one line per region. Save the plot to outputs/happiness_by_region.png.",
+    ]
 
     for query in queries:
         print(f"\n--- Query: {query} ---")
@@ -253,7 +241,8 @@ if __name__ == "__main__":
     my_query_1 = "Show me the top 3 countries with the lowest social support in 2019."  
     response_1 = agent.run(my_query_1, reset=False)
     print(response_1)
-    # Comment: This triggered tool use. The agent used the summarize_column tool.
+    # Comment: This triggered tool use only. It did not require code generation.
+
 
     # My query 2
     my_query_2 = """
@@ -266,8 +255,7 @@ if __name__ == "__main__":
 
     response_2 = agent.run(my_query_2, reset=False)
     print(response_2)
-   # Comment: This triggered code generation. The agent wrote pandas and matplotlib
-   # code to read the actual dataset and create the histogram.
+    # Comment: This triggered code generation only. It did not use a tool.
 
 
 # --- Task 5: Reflection ---

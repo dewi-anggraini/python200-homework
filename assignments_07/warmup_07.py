@@ -1,17 +1,15 @@
-# The live examples require ``OPENAI_API_KEY`` in the repository's ``.env`` file.
+
 # All paths are based on this file so the script works from any working directory.
 
 import json
 import os
-from datetime import datetime
-from pathlib import Path
-#from typing import Any, Callable
-
 import matplotlib
 import matplotlib.pyplot as plt
 matplotlib.use("Agg")
-
 import pandas as pd
+
+from datetime import datetime
+from pathlib import Path
 from dotenv import load_dotenv
 from openai import OpenAI
 from scipy.stats import pearsonr
@@ -26,14 +24,6 @@ api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=api_key)
 print('OpenAI client created.')
 
-
-#if load_dotenv():
-#    print('Successfully loaded environment variables from .env')
-#else:
-#    print('Warning: could not load environment variables from .env')
-
-#client = OpenAI()
-#print('OpenAI client created.')
 
 
 # --- Lesson 02: Tool Definitions and the ReAct Loop ---
@@ -72,7 +62,6 @@ print("\n--- LLM Tool Schema ---")
 print(celsius_schema)
 
 # Q2
-from datetime import datetime
 
 def get_current_time() -> str:
     '''Return the current local time as a formatted string.'''
@@ -81,12 +70,10 @@ def get_current_time() -> str:
 get_current_time()
 
 # Prediction:
-# I think run_agent will NOT call get_current_time because the question
-# is about converting Celsius to Fahrenheit, not about the current time.
-#
-# Therefore, I expect 0 tool/API calls to get_current_time.
-# The agent should be able to answer the conversion without using its
-# only available tool.
+# 1.Tool call: No. The get_current_time tool is only needed for
+#    questions about the current time, not Celsius conversion.
+# 2.API calls: 1. The model can answer the conversion directly,
+#    so no second API call is needed.
 
 
 tools = [
@@ -164,7 +151,7 @@ def run_agent(user_prompt: str) -> str:
             )
 
         # Step 4: second API call - model sees the tool result and gives final answer
-        second_response = api_key.chat.completions.create(
+        second_response = client.chat.completions.create(
             model='gpt-4.1-mini',
             messages=messages,
         )
@@ -184,7 +171,7 @@ print(result)
 
 # Was my prediction correct? Yes, my prediction was correct.
 # The tool was not called because the question was not about the time.
-# There was only 1 API call.
+# API calls: 1.
 
 # Q3
 tools = [
@@ -326,6 +313,7 @@ response_b = run_agent("What is the boiling point of water in plain English?")
 print("Response B:", response_b)
 # No tool was called because the question can be answered directly without using a tool.
 
+
 # --- Lesson 03: Multi-Tool Agent ---
 # Q4
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -340,18 +328,11 @@ RESOURCES_DIR = (
     / "resources"
     
 )
-#ASSIGNMENT_DIR = Path(__file__).resolve().parent
-#DOCUMENTS_DIR = ASSIGNMENT_DIR.parent.parent.parent
-
-# RESOURCES_DIR = DOCUMENTS_DIR / "python-200-v1" / "lessons" / "07_AI_agents" / "resources" 
-
-#RESOURCES_DIR = Path("resources")
-#RESOURCES_DIR
-print("RESOURCES_DIR =", RESOURCES_DIR)
-print("EXISTS =", RESOURCES_DIR.exists())
 
 if RESOURCES_DIR.exists():
     print("FILES =", [p.name for p in RESOURCES_DIR.iterdir()])
+
+
 class CsvManager:
     def __init__(self, resources_dir: Path):
         self.resources_dir = resources_dir
@@ -487,7 +468,7 @@ class CsvManager:
         Compute the Pearson correlation between two columns in the loaded DataFrame.
         Returns the correlation coefficient and p-value.
         """
-        # from scipy.stats import pearsonr
+        
         error = self._ensure_loaded()
         if error:
             return error
@@ -552,21 +533,18 @@ class CsvManager:
 print("Class defined")
 
 
-
-csv_backend = CsvManager(RESOURCES_DIR)
-
 # Reuse the CsvManager instance for Lesson 04
-csv_manager = csv_backend
+csv_manager = CsvManager(resources_dir=RESOURCES_DIR)
+
 
 node_tools = {
-    "list_csv_files": csv_backend.list_csv_files,
-    "load_csv": csv_backend.load_csv,
-    "get_columns": csv_backend.get_columns,
-    "summarize_columns": csv_backend.summarize_columns,
-    "describe_column": csv_backend.describe_column,
-    "compute_correlation": csv_backend.compute_correlation,
-    "plot_data": csv_backend.plot_data,
-    
+    "list_csv_files": csv_manager.list_csv_files,
+    "load_csv": csv_manager.load_csv,
+    "get_columns": csv_manager.get_columns,
+    "summarize_columns": csv_manager.summarize_columns,
+    "describe_column": csv_manager.describe_column,
+    "compute_correlation": csv_manager.compute_correlation,
+    "plot_data": csv_manager.plot_data,
 }
 
 tools_schema = [
@@ -773,10 +751,10 @@ result = run_agent_cycle(messages, "Load bike_commute.csv and compute the correl
 print(result)
 
 # Q6
-# system: gives the assistant instructions for how the agent should work with CSV files.
-# user: contains the user's question.
-# assistant: contains the LLM's response, including its reasoning and action.
-# tool: contains the result from the Python function to help the agent answer the user's question.
+# system: provides instructions for the assistant.
+# user: contains the user's request.
+# assistant: contains the assistant's response and tool calls.
+# tool: contains the result returned by the tool.
 print(json.dumps(messages, indent=2, default=str))
 
 
@@ -931,14 +909,17 @@ response_code = code_agent.run(
 print("ToolCallingAgent response:\n", response_tool)
 print("CodeAgent response:\n", response_code)
 
-# Both agents created the scatter plot, but neither changed the dots to green.
+# Based on actual output: Both agents created the scatter plot, but neither changed the dots to green.
 # The ToolCallingAgent said the plot was created with green dots, but its tool
 # did not actually support changing the color.
-# The CodeAgent also created the plot but did not change the dots to green.
 #
-# This shows that ToolCallingAgent is useful when existing tools can perform
-# the task, while CodeAgent is more useful when the agent needs to write custom
-# code to control or modify the output.
+# The CodeAgent also used the existing plot_data tool in this run, calling
+# it with y, x, and plot_type only. Therefore, it also did not actually
+# make the dots green.
+#
+# This shows that ToolCallingAgent is useful when the available tools already
+# provide the functionality needed. CodeAgent is more flexible because it can
+# write custom Python code when existing tools do not provide enough control.
 
 # Q9
 # 1. A ToolCallingAgent could be a good choice for a task such as loading
