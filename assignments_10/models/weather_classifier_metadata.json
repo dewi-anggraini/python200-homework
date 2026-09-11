@@ -1,0 +1,20 @@
+{
+    "python_version": "3.13.9 (tags/v3.13.9:8183fa5, Oct 14 2025, 14:09:13) [MSC v.1944 64 bit (AMD64)]",
+    "scikit-learn_version": "1.9.0",
+    "features": [
+        "temperature_2m_max",
+        "temperature_2m_min",
+        "precipitation_sum",
+        "wind_speed_10m_max"
+    ],
+    "best_hyperparameters": {
+        "classifier__C": 10.0
+    },
+    "test_auc": 0.944327731092437,
+    "location": {
+        "city": "Jakarta, Indonesia",
+        "latitude": -6.2088,
+        "longitude": 106.8456
+    },
+    "label_thresholds_description": "Good for running is defined as: temperature_2m_max between 20\u00b0C and 33\u00b0C, temperature_2m_min >= 0\u00b0C, precipitation_sum < 3.0 mm, and wind_speed_10m_max < 30 km/h. The maximum temperature threshold was adjusted to reflect Jakarta's tropical climate, as permitted by the assignment."
+}
