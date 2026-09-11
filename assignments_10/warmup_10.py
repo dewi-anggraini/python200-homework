@@ -38,9 +38,11 @@ TWO_SENTENCE_PROMPT = (
 
 )
 
-# What I would change:
-# From checking for one sentence to checking for exactly two complete sentences.
-# I also make sure the first sentence contains the prediction and the second sentence gives the reasoning.
+# What I would change in validation logic:
+# I would update the validation logic to check that the response contains exactly two sentences
+# instead of one sentence, for example using a regular expression rather than splitting on periods. 
+# I also make sure the first sentence contains the prediction 
+# and the second sentence gives the reasoning.
 
 
 # Q2
@@ -52,10 +54,8 @@ def call_with_retry(client, messages, max_retries=3):
                 model="gpt-4o-mini",
                 messages=messages,
                 max_tokens=200,
-                temperature=0.7
             )
-            raw_summary = response.choices[0].message.content
-            return raw_summary
+            return response.choices[0].message.content
         except Exception as e:
             print(f"Error occurred: {e}")
             if attempt < max_retries:

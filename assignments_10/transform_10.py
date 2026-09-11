@@ -1,7 +1,5 @@
-# This link has been tested, is accessible, and works well.
 # Video Link: https://drive.google.com/file/d/1blwMmdqTlgcL0gmHWkvaYbowJt4Gm1h0/view?usp=sharing 
-
-
+# This link has been tested, is accessible, and works well.
 import json
 import re
 import os
@@ -135,12 +133,8 @@ for i, record in enumerate(enrichment_records):
             r'[.!?](?=\s|$)',
             summary
         )
-
-        if summary and len(sentence_endings) == 1:
-            record["llm_summary"] = summary
-        else:
-            record["llm_summary"] = "Recommendation unavailable."
-
+        if not summary or len(sentence_endings) != 1:
+            summary = "Recommendation unavailable."
 
     except Exception as e:
         print(f"Error processing record {record['date']}: {e}")
@@ -151,15 +145,6 @@ for i, record in enumerate(enrichment_records):
     if (i + 1) % 50 == 0:
         print(f"Processed {i + 1} / {len(enrichment_records)} records")
 
-print("\nSample LLM results:")
-
-for record in enrichment_records[:5]:
-    print(
-        f"\n{record['date']}"
-        f" | good={record['good_for_running']}"
-        f" | confidence={record['confidence']:.2f}"
-    )
-    print(f"  {record['llm_summary']}")
 
 # Step 4: Load
 
