@@ -1,21 +1,20 @@
 # --- ML vs. LLM in Pipelines ---
 
-# Q1
-# The ML classifier outputs a strict number (0 or 1) and a confidence 
-# score, while the LLM outputs a human-readable text sentence.
+# Q1 
+# The ML model is used for the binary prediction because it is trained for that classification task,
+# while the LLM produces a recommendation or explanation in a readable natural language.
 # The ML is appropriate for the decision because it is fast, inexpensive, deterministic, 
 # and evaluated on labeled examples, while the LLM is appropriate for wording because it can
-# explain structured facts naturally. If their roles were swapped, an LLM could
-# make inconsistent binary decisions that are harder to evaluate and reproduce.
-# The sklearn model also cannot be swapped into the writing role because a
-# numeric classification Pipeline has no ability to generate language.
-
+# explain structured facts naturally. If we used the LLM to make the binary good/skip prediction, 
+# the result could be less consistent because LLM responses can vary. If we used the ML model
+# to write the recommendation, it would not be suitable because a classifier
+# produces predictions, not natural-language recommendations.
 
 # Q2
 # Converting a date to day-of-week: Deterministic code because standard date math is free and flawless.
 # Classifying a job posting: An LLM, because the task requires interpreting varied natural-language responsibilities and context.
 # Predicting customer churn:  A trained ML model, because a labeled structured dataset supports fast, repeatable predictive inference.
-# Normalizing inconsistent city names to a canonical form: An LLM, because it can interpret aliases and inconsistent natural-language formats not in a fixed map.
+# Normalizing inconsistent city names: deterministic code because known city names can be mapped to one standard name.
 # Summing a column of revenue figures: Deterministic code because math must be 100% precise.
 
 

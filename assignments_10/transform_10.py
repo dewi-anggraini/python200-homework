@@ -1,6 +1,9 @@
+# This link has been tested, is accessible, and works well.
 # Video Link: https://drive.google.com/file/d/1blwMmdqTlgcL0gmHWkvaYbowJt4Gm1h0/view?usp=sharing 
 
+
 import json
+import re
 import os
 import pandas as pd
 from dotenv import load_dotenv
@@ -29,9 +32,9 @@ if not to_classify:
     print("Nothing to do — all records already enriched.")
     exit()
 
-print(f"Raw records: {len(raw_rows)}") # 366
-print(f"Already enriched: {len(already_done)}") # 0
-print(f"Will be processed: {len(to_classify)}") # 366
+print(f"Raw records: {len(raw_rows)}")
+print(f"Already enriched: {len(already_done)}")
+print(f"Will be processed: {len(to_classify)}") 
 
 
 
@@ -106,15 +109,6 @@ def make_user_message(row, good_for_running, confidence):
     )
     
     
-def validate_summary(text):
-    text = text.strip()
-    if not text:
-        return None
-    # Reject if more than two sentences 
-    sentences = [s for s in text.split('.') if s.strip()]
-    if len(sentences) != 1:
-        return None
-    return text
 
 for i, record in enumerate(enrichment_records):
     try:
@@ -134,8 +128,19 @@ for i, record in enumerate(enrichment_records):
             ],
             max_tokens=100,
         )
-        raw_summary = response.choices[0].message.content
-        summary = validate_summary(raw_summary) or "Recommendation unavailable."
+        summary = response.choices[0].message.content.strip()
+
+        # Check for exactly one sentence.
+        sentence_endings = re.findall(
+            r'[.!?](?=\s|$)',
+            summary
+        )
+
+        if summary and len(sentence_endings) == 1:
+            record["llm_summary"] = summary
+        else:
+            record["llm_summary"] = "Recommendation unavailable."
+
 
     except Exception as e:
         print(f"Error processing record {record['date']}: {e}")
@@ -146,7 +151,15 @@ for i, record in enumerate(enrichment_records):
     if (i + 1) % 50 == 0:
         print(f"Processed {i + 1} / {len(enrichment_records)} records")
 
+print("\nSample LLM results:")
 
+for record in enrichment_records[:5]:
+    print(
+        f"\n{record['date']}"
+        f" | good={record['good_for_running']}"
+        f" | confidence={record['confidence']:.2f}"
+    )
+    print(f"  {record['llm_summary']}")
 
 # Step 4: Load
 
@@ -176,11 +189,11 @@ print(f"Good days: {good_days}")
 print("\nSample rows:")
 for row in all_rows[:5]:
     print(
-        f"\n{row["date"]} | "
-        f"good={row["good_for_running"]} | "
-        f"conf={row["confidence"]:.2f}"
+        f"\n{row['date']} | "
+        f"good={row['good_for_running']} | "
+        f"conf={row['confidence']:.2f}"
     )
-    print(f"  {row["llm_summary"]}")
+    print(f"  {row['llm_summary']}")
     
 # The summaries generally reflected the weather features and the model prediction.    
 # A good example was the June 10 summary,
