@@ -26,14 +26,13 @@ already_done = {row["date"] for row in enriched_response.data}
 
 to_classify = [row for row in raw_rows if row["date"] not in already_done]
 
-if not to_classify:
-    print("Nothing to do — all records already enriched.")
-    exit()
-
 print(f"Raw records: {len(raw_rows)}")
 print(f"Already enriched: {len(already_done)}")
 print(f"Will be processed: {len(to_classify)}") 
 
+if not to_classify:
+    print("Nothing to do — all records already enriched.")
+    exit()
 
 
 # Step 2: ML Transform
