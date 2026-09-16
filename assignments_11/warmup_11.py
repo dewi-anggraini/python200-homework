@@ -15,8 +15,6 @@ from prefect import task, get_run_logger
 
 # Prefect Q2
 @task(name="call_api", retries=3, retry_delay_seconds=30)
-def call_api():
-    pass
 
 
 # Prefect Q3
@@ -58,7 +56,7 @@ def call_api():
 
 
 # Production Q3
-task(name="load_enriched_records")
+@task
 def load_enriched(enrichment_records: list):
     get_run_logger().info(f"Successfully upserted {len(enrichment_records)} enrichment records.")
 
@@ -72,4 +70,4 @@ def load_enriched(enrichment_records: list):
 # What would be the practical consequences if you remove it?
 # If we removed the check, the ML and LLM steps would run on all 365 records every time.
 # This would increase API/compute costs and make the pipeline take much longer to finish.
-# It could also cause data correctness problems because existing enrichment results
+# It could also cause data correctness problems because existing enrichment results.
