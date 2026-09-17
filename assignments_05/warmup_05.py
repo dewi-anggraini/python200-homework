@@ -161,33 +161,21 @@ reviews = [
 ]
 
 prompt = f"""
-Classify the sentiment of the following text as positive, negative, or mixed.
+Analyze the sentiment of the following customer reviews and classify each as positive, negative, or mixed.
 
-Return your answer ONLY in this format:
+Print each result labeled with the review number and the sentiment classification.
 
-Review 1: <sentiment>
-Review 2: <sentiment>
-Review 3: <sentiment>
-
-Review 1:
-{reviews[0]}
-
-Review 2:
-{reviews[1]}
-
-Review 3:
-{reviews[2]}
-
+Reviews:
+1. {reviews[0]} 
+2. {reviews[1]}
+3. {reviews[2]}
 """
-
 response = client.chat.completions.create(
     model="gpt-4o-mini",
-    messages=[
-        {"role": "user", "content": prompt}
-    ]
+    messages=[{"role": "user", "content": prompt}]
 )
-print("Prompt Q1 Output:")
-print(response.choices[0].message.content)
+
+print("Zero-Shot Sentiment Analysis:\n", response.choices[0].message.content)
 
 
 # Prompt Q2 
@@ -327,8 +315,7 @@ response = client.chat.completions.create(
 )
 
 raw_response = response.choices[0].message.content
-print("Prompt Q5 Output:")
-print(raw_response)
+print("Raw Response:\n", raw_response)
 
 try:
     result = json.loads(raw_response)
