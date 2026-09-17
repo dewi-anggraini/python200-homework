@@ -60,13 +60,17 @@ def rewrite_bullets(bullets: list[str]) -> list[dict]:
 
     response = response.replace("```json", "").replace("```", "").strip()
 
-    result = json.loads(response)
+    try:
+        result = json.loads(response)
+    except json.JSONDecodeError:
+        print("Error: Failed to parse JSON from the model response.")
+        print(f"Raw response was:\n{response}")
+        return []
 
     print(f"{'Original':<60} | Improved")
     print("-" * 120)
     for item in result:
         print(f"{item['original']:<60} | {item['improved']}")
-
 
     return result
 
