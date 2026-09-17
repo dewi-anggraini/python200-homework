@@ -233,8 +233,10 @@ def run_chatbot():
                    
             # YOUR CODE: call rewrite_bullets() and print the results 
             result = rewrite_bullets(raw_bullets)
-
-            print("\nJob Application Helper:\n")
+            if not result:
+                print("\nJob Application Helper:")
+                print("I could not rewrite the bullets. Please try again.")
+                continue
 
             for i, item in enumerate(result, start=1):
                 print(f"Bullet {i}")
@@ -242,9 +244,11 @@ def run_chatbot():
                 print(f"Improved: {item['improved']}")
                 print()
 
+            assistant_reply = "\n".join(f"Original: {item['original']} | Improved: {item['improved']}" for item in result)
+
             messages.append({
                 "role": "assistant",
-                "content": json.dumps(result)
+                "content": assistant_reply
             })
 
 
