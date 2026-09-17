@@ -60,10 +60,13 @@ def rewrite_bullets(bullets: list[str]) -> list[dict]:
 
     response = response.replace("```json", "").replace("```", "").strip()
 
-    # print("RAW RESPONSE:")
-    # print(response)
-
     result = json.loads(response)
+
+    print(f"{'Original':<60} | Improved")
+    print("-" * 120)
+    for item in result:
+        print(f"{item['original']:<60} | {item['improved']}")
+
 
     return result
 
@@ -116,16 +119,13 @@ def generate_cover_letter(job_title: str, background: str) -> str:
 
     return response
 
-# if __name__ == "__main__":
-
+# Test Function
 #    job_title = "Junior Data Engineer"
 #    background = """
 #    Five years of experience as a middle school math teacher;
 #    recently completed a Python course and built data pipelines using Prefect and Pandas.
 #    """
-
 #    cover_letter = generate_cover_letter(job_title, background)
-
 #    print("Cover Letter Opening:")
 #    print(cover_letter)
 
@@ -155,6 +155,7 @@ def is_safe(text: str) -> bool:
 
 test_inputs = [
     "Help me write a cover letter for a data analyst position.",
+    "How to hack a bank's computer system to steal data"
 ]
 
 for text in test_inputs:
@@ -176,7 +177,6 @@ def run_chatbot():
     messages = [
         {"role": "system", "content": system_prompt}
     ]
-    # print("Start:", len(messages))
 
     print("=" * 50)
     print("Job Application Helper")
@@ -201,7 +201,7 @@ def run_chatbot():
 
         # 4. Run moderation check before doing anything else
         if not is_safe(user_input):
-            continue  # is_safe() already printed the warning message
+            continue  
 
         # 5. Check if the user wants to rewrite bullets
         #    (hint: look for keywords like "bullet" or "resume" in user_input.lower())
@@ -284,7 +284,6 @@ def run_chatbot():
                 "role": "assistant", "content": response
             })
 
-            # print(len(messages))   # Temporary
 
 
 if __name__ == "__main__":

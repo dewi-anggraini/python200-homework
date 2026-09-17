@@ -163,7 +163,7 @@ reviews = [
 prompt = f"""
 Classify the sentiment of the following text as positive, negative, or mixed.
 
-Return your answer in exactly this format:
+Return your answer ONLY in this format:
 
 Review 1: <sentiment>
 Review 2: <sentiment>
