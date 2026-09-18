@@ -6,6 +6,23 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.stats import pearsonr
 from scipy.stats import ttest_ind
+from pathlib import Path
+
+PROJECT_DIR = Path(__file__).resolve().parent
+
+# Location of the input data:
+# .../assignments/resources/happiness_project/
+RESOURCES_DIR = (
+    PROJECT_DIR.parent
+    / "assignments"
+    / "resources"
+    / "happiness_project"
+)
+
+# to save results
+# .../assignments_01/outputs/
+OUTPUT_DIR = PROJECT_DIR / "outputs"
+
 
 # --- Task 1: Load Multiple Years ---
 @task(
@@ -43,12 +60,21 @@ def load_happiness_data(file_paths):
         ignore_index=True
     )
     # ensuring the outputs folder has been created
-    os.makedirs("outputs", exist_ok=True)
+    OUTPUT_DIR.mkdir(
+        parents=True,
+        exist_ok=True
+    )
+    # os.makedirs("outputs", exist_ok=True)
 
     merged_df.to_csv(
-        "outputs/merged_happiness.csv",
+        OUTPUT_DIR / "merged_happiness.csv",
         index=False
     )
+
+    # merged_df.to_csv(
+    #    "outputs/merged_happiness.csv",
+    #    index=False
+    #)
 
     return merged_df
 
@@ -56,10 +82,15 @@ def load_happiness_data(file_paths):
 def happiness_pipeline():
 
     file_paths = [
-        f"resources/happiness_project/world_happiness_{year}.csv"
-        # f"../python-200-v1-main/assignments/resources/happiness_project/world_happiness_{year}.csv"
+        RESOURCES_DIR / f"world_happiness_{year}.csv"
         for year in range(2015, 2025)
     ]
+
+    #file_paths = [
+    #    f"resources/happiness_project/world_happiness_{year}.csv"
+    #    # f"../python-200-v1-main/assignments/resources/happiness_project/world_happiness_{year}.csv"
+    #    for year in range(2015, 2025)
+    #]
 
     df = load_happiness_data(file_paths)
     descriptive_statistics(df)
@@ -132,7 +163,8 @@ def create_visualizations(df):
     plt.xlabel("Happiness Score")
     plt.ylabel("Frequency")
 
-    plt.savefig("outputs/happiness_histogram.png")
+    # plt.savefig("outputs/happiness_histogram.png")
+    plt.savefig(OUTPUT_DIR / "happiness_histogram.png")
 
     plt.close()
 
@@ -149,7 +181,7 @@ def create_visualizations(df):
 
     plt.title("Happiness Scores by Year")
 
-    plt.savefig("outputs/happiness_by_year.png")
+    plt.savefig(OUTPUT_DIR/"happiness_by_year.png")
 
     plt.close()
 
@@ -166,7 +198,7 @@ def create_visualizations(df):
 
     plt.title("GDP vs Happiness")
 
-    plt.savefig("outputs/gdp_vs_happiness.png")
+    plt.savefig(OUTPUT_DIR/"gdp_vs_happiness.png")
 
     plt.close()
 
@@ -185,7 +217,7 @@ def create_visualizations(df):
 
     plt.title("Correlation Heatmap")
 
-    plt.savefig("outputs/correlation_heatmap.png")
+    plt.savefig(OUTPUT_DIR/"correlation_heatmap.png")
 
     plt.close()
 
